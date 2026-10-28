@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1419" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Aulas Gerais</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%232a68a3'/%3E%3Ctext x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-family='system-ui'%3EA%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a212a;
+      --surface-2: #232c37;
+      --fg: #e5ecf3;
+      --muted: #97a6b7;
+      --line: #2d3947;
+      --accent: #478cbf;
+      --accent-soft: #1f3347;
+      --good: #8eef97;
+      --bad: #fc7f7f;
+      --radius: 10px;
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100dvh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(15,20,25,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      flex: 1;
+      letter-spacing: -0.02em;
+    }
+    .btn {
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--fg);
+      padding: 7px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .15s, border-color .15s;
+    }
+    .btn:hover { background: var(--surface-2); border-color: var(--accent); }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #0c1722;
+    }
+    .btn.primary:hover { filter: brightness(1.1); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn .spin { animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Layout */
+    main { padding: 16px; max-width: 720px; margin: 0 auto; padding-bottom: 80px; }
+
+    /* Status */
+    .status {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted);
+    }
+    .dot.online { background: var(--good); }
+    .dot.offline { background: var(--bad); }
+
+    /* Categories */
+    .cat {
+      margin-bottom: 28px;
+    }
+    .cat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .cat-header h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .cat-header span {
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--surface-2);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    /* Lesson cards */
+    .lessons { display: flex; flex-direction: column; gap: 8px; }
+    .lesson {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      text-align: left;
+      width: 100%;
+      color: inherit;
+      font: inherit;
+    }
+    .lesson:hover { border-color: var(--accent); background: var(--surface-2); }
+    .lesson.done { border-color: #2a5a3a; }
+    .lesson .num {
+      font-family: ui-monospace, monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 2.2em;
+    }
+    .lesson .info { flex: 1; min-width: 0; }
+    .lesson .title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lesson .file {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .check {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all .15s;
+    }
+    .lesson.done .check {
+      background: var(--good);
+      border-color: var(--good);
+      color: #0c1722;
+    }
+
+    /* Empty / loading */
+    .empty, .loading {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+    }
+    .loading { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--line);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* Viewer */
+    #viewer {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: var(--bg);
+      display: none;
+      flex-direction: column;
+    }
+    #viewer.open { display: flex; }
+    #viewer header {
+      flex-shrink: 0;
+    }
+    #viewer iframe {
+      flex: 1;
+      border: 0;
+      width: 100%;
+      background: #fff;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      color: var(--fg);
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      z-index: 200;
+      transition: transform .3s ease;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Progress bar overall */
+    .progress-bar {
+      height: 4px;
+      background: var(--surface-2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .progress-bar > div {
+      height: 100%;
+      background: var(--accent);
+      transition: width .4s ease;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Aulas Gerais</h1>
+    <button class="btn" id="btn-update" title="Verificar atualizações">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Atualizar
+    </button>
+  </header>
+
+  <main>
+    <div class="status" id="status">
+      <span class="dot" id="status-dot"></span>
+      <span id="status-text">Carregando...</span>
+    </div>
+
+    <div class="progress-bar" id="progress-wrap" hidden>
+      <div id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <div id="content">
+      <div class="loading">
+        <div class="spinner"></div>
+        <span>Carregando aulas...</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Viewer -->
+  <div id="viewer">
+    <header>
+      <button class="btn" id="btn-back">← Voltar</button>
+      <h1 id="viewer-title" style="font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></h1>
+      <button class="btn" id="btn-done">Concluir</button>
+    </header>
+    <iframe id="frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  const REPO = 'Jeff-DevP/aulas-geral';
+  const API_BASE = `https://api.github.com/repos/${REPO}/contents`;
+  const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/main`;
+
+  // ---------- State ----------
+  let data = { categories: {}, lastUpdate: null }; // { catName: [ {path, name, sha, num, title, content?} ] }
+  let progress = JSON.parse(localStorage.getItem('progress') || '{}'); // path -> true
+  let currentLesson = null;
+
+  // ---------- Helpers ----------
+  const $ = (s) => document.querySelector(s);
+  const toast = (msg, time = 2800) => {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), time);
+  };
+
+  function saveProgress() {
+    localStorage.setItem('progress', JSON.stringify(progress));
+  }
+
+  function parseLesson(html, filename) {
+    // Extract Aula number
+    let num = 9999;
+    const mNum = html.match(/Aula\s+(\d+)/i) || html.match(/aula\s*0*(\d+)/i);
+    if (mNum) num = parseInt(mNum[1], 10);
+
+    // Title
+    let title = filename.replace(/\.html$/i, '').replace(/[-_]/g, ' ');
+    const mTitle = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    if (mTitle) title = mTitle[1].trim();
+    // Prefer h1 if more descriptive
+    const mH1 = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+    if (mH1 && mH1[1].trim().length > 3) title = mH1[1].trim();
+
+    // Clean title a bit
+    title = title.replace(/^Aula\s+\d+\s*[·\-|:]?\s*/i, '').trim() || title;
+
+    return { num, title };
+  }
+
+  // ---------- IndexedDB (cache of lessons) ----------
+  const DB_NAME = 'aulas-geral';
+  const STORE = 'lessons';
+
+  function openDB() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open(DB_NAME, 1);
+      r.onupgradeneeded = () => r.result.createObjectStore(STORE, { keyPath: 'path' });
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  }
+
+  async function idbGet(path) {
+    const db = await openDB();
+    return new Promise((res) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).get(path);
+      req.onsuccess = () => res(req.result || null);
+      req.onerror = () => res(null);
+    });
+  }
+
+  async function idbPut(obj) {
+    const db = await openDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).put(obj);
+      tx.oncomplete = () => res();
+      tx.onerror = () => rej(tx.error);
+    });
+  }
+
+  async function idbGetAll() {
+    const db = await openDB();
+    return new Promise((res) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).getAll();
+      req.onsuccess = () => res(req.result || []);
+      req.onerror = () => res([]);
+    });
+  }
+
+  // ---------- GitHub API ----------
+  async function githubGet(path = '') {
+    const url = path ? `${API_BASE}/${path}` : API_BASE;
+    const res = await fetch(url, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+    return res.json();
+  }
+
+  async function fetchRaw(path) {
+    const res = await fetch(`${RAW_BASE}/${path}`);
+    if (!res.ok) throw new Error('Falha ao baixar ' + path);
+    return res.text();
+  }
+
+  // ---------- Core: sync ----------
+  async function syncFromGitHub(force = false) {
+    const btn = $('#btn-update');
+    btn.disabled = true;
+    btn.innerHTML = `<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Atualizando...`;
+
+    try {
+      const root = await githubGet();
+      const folders = root.filter(i => i.type === 'dir' && !i.name.startsWith('.'));
+
+      const newData = { categories: {}, lastUpdate: Date.now() };
+
+      for (const folder of folders) {
+        const files = await githubGet(folder.path);
+        const htmls = files.filter(f => f.type === 'file' && f.name.toLowerCase().endsWith('.html'));
+
+        const lessons = [];
+        for (const f of htmls) {
+          // Check cache first
+          let cached = await idbGet(f.path);
+          let content = null;
+          let meta = null;
+
+          if (cached && cached.sha === f.sha && !force) {
+            // Use cache
+            content = cached.content;
+            meta = { num: cached.num, title: cached.title };
+          } else {
+            // Download and parse
+            content = await fetchRaw(f.path);
+            meta = parseLesson(content, f.name);
+            await idbPut({
+              path: f.path,
+              sha: f.sha,
+              name: f.name,
+              num: meta.num,
+              title: meta.title,
+              content,
+              category: folder.name
+            });
+          }
+
+          lessons.push({
+            path: f.path,
+            name: f.name,
+            sha: f.sha,
+            num: meta.num,
+            title: meta.title,
+            category: folder.name
+          });
+        }
+
+        // Sort by lesson number
+        lessons.sort((a, b) => a.num - b.num || a.title.localeCompare(b.title));
+        newData.categories[folder.name] = lessons;
+      }
+
+      data = newData;
+      localStorage.setItem('data-meta', JSON.stringify({
+        categories: Object.fromEntries(
+          Object.entries(data.categories).map(([k, v]) => [k, v.map(l => ({
+            path: l.path, name: l.name, sha: l.sha, num: l.num, title: l.title, category: l.category
+          }))])
+        ),
+        lastUpdate: data.lastUpdate
+      }));
+
+      render();
+      toast(force ? 'Atualizado com sucesso!' : 'Aulas carregadas');
+      updateStatus(true);
+    } catch (err) {
+      console.error(err);
+      // Try load from cache
+      await loadFromCache();
+      toast('Sem conexão. Usando cache local.', 3500);
+      updateStatus(false);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Atualizar`;
+    }
+  }
+
+  async function loadFromCache() {
+    const meta = localStorage.getItem('data-meta');
+    if (meta) {
+      const parsed = JSON.parse(meta);
+      data = { categories: parsed.categories, lastUpdate: parsed.lastUpdate };
+      render();
+      return true;
+    }
+
+    // Fallback: rebuild from IndexedDB
+    const all = await idbGetAll();
+    if (all.length === 0) {
+      $('#content').innerHTML = `<div class="empty">
+        <p>Nenhuma aula encontrada.</p>
+        <p style="margin-top:8px;font-size:0.9rem">Suba pastas com arquivos .html no repositório e clique em Atualizar.</p>
+      </div>`;
+      return false;
+    }
+
+    const cats = {};
+    for (const item of all) {
+      if (!cats[item.category]) cats[item.category] = [];
+      cats[item.category].push({
+        path: item.path,
+        name: item.name,
+        sha: item.sha,
+        num: item.num,
+        title: item.title,
+        category: item.category
+      });
+    }
+    for (const k of Object.keys(cats)) {
+      cats[k].sort((a, b) => a.num - b.num || a.title.localeCompare(b.title));
+    }
+    data = { categories: cats, lastUpdate: null };
+    render();
+    return true;
+  }
+
+  // ---------- Render ----------
+  function render() {
+    const cats = Object.keys(data.categories).sort();
+    if (cats.length === 0) {
+      $('#content').innerHTML = `<div class="empty">
+        <p>Nenhuma pasta de aulas encontrada.</p>
+        <p style="margin-top:8px;font-size:0.9rem">Crie pastas (ex: <code>godot</code>, <code>pixel-art</code>) e coloque os .html dentro.</p>
+      </div>`;
+      $('#progress-wrap').hidden = true;
+      return;
+    }
+
+    // Overall progress
+    let total = 0, done = 0;
+    for (const cat of cats) {
+      for (const l of data.categories[cat]) {
+        total++;
+        if (progress[l.path]) done++;
+      }
+    }
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    $('#progress-wrap').hidden = false;
+    $('#progress-fill').style.width = pct + '%';
+
+    let html = '';
+    for (const cat of cats) {
+      const lessons = data.categories[cat];
+      const catDone = lessons.filter(l => progress[l.path]).length;
+      html += `
+        <div class="cat">
+          <div class="cat-header">
+            <h2>${escapeHtml(cat)}</h2>
+            <span>${catDone}/${lessons.length}</span>
+          </div>
+          <div class="lessons">
+            ${lessons.map(l => `
+              <button class="lesson ${progress[l.path] ? 'done' : ''}" data-path="${escapeHtml(l.path)}">
+                <span class="num">${l.num < 9999 ? l.num : '–'}</span>
+                <div class="info">
+                  <div class="title">${escapeHtml(l.title)}</div>
+                  <div class="file">${escapeHtml(l.name)}</div>
+                </div>
+                <div class="check">${progress[l.path] ? '✓' : ''}</div>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+    $('#content').innerHTML = html;
+
+    // Bind clicks
+    $$('.lesson').forEach(el => {
+      el.addEventListener('click', () => openLesson(el.dataset.path));
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function $$(s) { return Array.from(document.querySelectorAll(s)); }
+
+  // ---------- Open lesson ----------
+  async function openLesson(path) {
+    currentLesson = path;
+    const meta = findLesson(path);
+    $('#viewer-title').textContent = meta ? meta.title : path.split('/').pop();
+
+    // Get content
+    let content = null;
+    const cached = await idbGet(path);
+    if (cached && cached.content) {
+      content = cached.content;
+    } else {
+      try {
+        content = await fetchRaw(path);
+        // Save it
+        const parsed = parseLesson(content, path.split('/').pop());
+        await idbPut({ path, sha: meta?.sha || '', name: path.split('/').pop(), ...parsed, content, category: meta?.category || '' });
+      } catch (e) {
+        toast('Não foi possível carregar a aula');
+        return;
+      }
+    }
+
+    // Show in iframe via blob
+    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const frame = $('#frame');
+    frame.src = url;
+    frame.onload = () => URL.revokeObjectURL(url);
+
+    $('#viewer').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Update done button
+    updateDoneBtn();
+  }
+
+  function findLesson(path) {
+    for (const cat of Object.values(data.categories)) {
+      const found = cat.find(l => l.path === path);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  function updateDoneBtn() {
+    const btn = $('#btn-done');
+    if (progress[currentLesson]) {
+      btn.textContent = 'Concluída ✓';
+      btn.classList.add('primary');
+    } else {
+      btn.textContent = 'Concluir';
+      btn.classList.remove('primary');
+    }
+  }
+
+  function closeViewer() {
+    $('#viewer').classList.remove('open');
+    $('#frame').src = 'about:blank';
+    document.body.style.overflow = '';
+    currentLesson = null;
+    render(); // refresh checkmarks
+  }
+
+  // ---------- Status ----------
+  function updateStatus(online) {
+    const dot = $('#status-dot');
+    const text = $('#status-text');
+    if (online) {
+      dot.className = 'dot online';
+      const d = data.lastUpdate ? new Date(data.lastUpdate) : null;
+      text.textContent = d
+        ? `Atualizado ${d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}`
+        : 'Online';
+    } else {
+      dot.className = 'dot offline';
+      text.textContent = 'Offline · usando cache';
+    }
+  }
+
+  // ---------- Events ----------
+  $('#btn-update').addEventListener('click', () => syncFromGitHub(true));
+  $('#btn-back').addEventListener('click', closeViewer);
+  $('#btn-done').addEventListener('click', () => {
+    if (!currentLesson) return;
+    progress[currentLesson] = !progress[currentLesson];
+    saveProgress();
+    updateDoneBtn();
+    toast(progress[currentLesson] ? 'Marcada como concluída' : 'Desmarcada');
+  });
+
+  // ---------- Init ----------
+  async function init() {
+    // Register SW
+    if ('serviceWorker' in navigator) {
+      try { await navigator.serviceWorker.register('./sw.js'); } catch(e) {}
+    }
+
+    // Try load cache first for instant UI
+    const hasCache = await loadFromCache();
+    if (hasCache) updateStatus(navigator.onLine);
+
+    // Then try network
+    if (navigator.onLine) {
+      await syncFromGitHub(false);
+    } else {
+      updateStatus(false);
+      if (!hasCache) {
+        $('#content').innerHTML = `<div class="empty"><p>Sem conexão e nenhum cache disponível.</p></div>`;
+      }
+    }
+  }
+
+  window.addEventListener('online', () => updateStatus(true));
+  window.addEventListener('offline', () => updateStatus(false));
+
+  init();
+  </script>
+</body>
+</html>
