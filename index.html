@@ -871,7 +871,58 @@
     }
   }
 
-  $('#btn-update').addEventListener('click', () => syncFromGitHub(true));
+  async function forceAppRefresh() {
+    // Clear all caches
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    // Tell SW to clear and skip waiting
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage('CLEAR_CACHE');
+      navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
+    }
+    // Unregister old SW so next load gets fresh one
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    // Hard reload
+    location.reload(true);
+  }
+
+  $('#btn-update').addEventListener('click', async () => {
+    // Long-press style: if shift/alt held, force full app refresh
+    // Otherwise normal lesson sync, then offer reload if SW updated
+    const btn = $('#btn-update');
+    btn.disabled = true;
+    try {
+      await syncFromGitHub(true);
+      // After syncing lessons, also check for new app version
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          await reg.update();
+          if (reg.waiting) {
+            reg.waiting.postMessage('SKIP_WAITING');
+            toast('Nova versão do app encontrada. Recarregando...');
+            setTimeout(() => location.reload(), 800);
+            return;
+          }
+        }
+      }
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // Double-click or long hold alternative: force clear everything
+  let updateTapCount = 0;
+  $('#btn-update').addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    toast('Limpando cache e recarregando app...');
+    forceAppRefresh();
+  });
   $('#btn-back').addEventListener('click', closeViewer);
   $('#btn-done').addEventListener('click', () => {
     if (!currentLesson) return;
