@@ -1,0 +1,748 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Animações com Tween</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: coluna única de ~980px. Cada aula tem um texto curto e um widget para clicar ou mexer.
+   As cores de tipo de nó (azul = 2D, verde = Control, vermelho = 3D) vêm do próprio editor da Godot. */
+:root{
+  --bg:#f1f4f8; --surface:#ffffff; --surface-2:#e7ecf3; --fg:#141d28; --muted:#526173; --line:#d0d8e3;
+  --accent:#2a68a3; --accent-soft:#dbe8f5; --on-accent:#ffffff;
+  --n2d:#3556c8; --ctl:#1d7f37; --n3d:#c13a3e; --nbase:#6a7a8c;
+  --coin:#b57d00; --good:#1d7f37; --bad:#c13a3e;
+  --code-bg:#161c24; --code-fg:#d9e2ec; --code-dim:#7d8fa3;
+  --code-k:#ff7085; --code-f:#57b3ff; --code-s:#ffeb8a; --code-n:#c9a0ff; --code-t:#8eef97;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Figtree','Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151b; --surface:#1a212a; --surface-2:#232c37; --fg:#e5ecf3; --muted:#97a6b7; --line:#2d3947;
+    --accent:#478cbf; --accent-soft:#1f3347; --on-accent:#0c1722;
+    --n2d:#8da5f3; --ctl:#8eef97; --n3d:#fc7f7f; --nbase:#97a6b7;
+    --coin:#f2c14e; --good:#8eef97; --bad:#fc7f7f;
+    --code-bg:#0d1116;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151b; --surface:#1a212a; --surface-2:#232c37; --fg:#e5ecf3; --muted:#97a6b7; --line:#2d3947;
+  --accent:#478cbf; --accent-soft:#1f3347; --on-accent:#0c1722;
+  --n2d:#8da5f3; --ctl:#8eef97; --n3d:#fc7f7f; --nbase:#97a6b7;
+  --coin:#f2c14e; --good:#8eef97; --bad:#fc7f7f;
+  --code-bg:#0d1116;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:var(--font-body); font-size:16px; line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:28px 72px;
+}
+.wrap{max-width:980px;margin:0 auto}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.15;margin:0;text-wrap:balance}
+p{margin:0 0 12px;max-width:65ch}
+a{color:var(--accent)}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--code-bg);color:var(--code-fg);padding:2px 6px;border-radius:4px;white-space:nowrap}
+pre{font-family:var(--font-mono);font-size:.86rem;line-height:1.55;background:var(--code-bg);color:var(--code-fg);margin:0;padding:14px 16px;border-radius:6px;overflow-x:auto;tab-size:4}
+pre code{background:none;padding:0;font-size:inherit;white-space:pre}
+.c{color:var(--code-dim)} .k{color:var(--code-k)} .f{color:var(--code-f)} .s{color:var(--code-s)} .n{color:var(--code-n)} .t{color:var(--code-t)}
+.small{font-size:.9rem;color:var(--muted)}
+.eyebrow{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center;padding-block:20px 44px}
+.hero h1{font-size:clamp(2.6rem,7vw,4.6rem);font-weight:700;letter-spacing:-.02em;margin:10px 0 16px}
+.hero .lead{font-size:1.12rem;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.meta span{font-family:var(--font-mono);font-size:.78rem;border:1px solid var(--line);border-radius:4px;padding:3px 9px;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.ht{padding:14px 16px;font-family:var(--font-mono);font-size:.85rem}
+.ht ul{list-style:none;margin:0;padding:0 0 0 18px;border-left:1px solid var(--line)}
+.ht>ul{padding-left:0;border-left:0}
+.ht li{padding:3px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ht .ty{color:var(--muted);font-size:.78rem}
+.dot{display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--nbase);flex:none}
+.dot.n2d{background:var(--n2d)} .dot.ctl{background:var(--ctl)} .dot.n3d{background:var(--n3d)} .dot.base{background:var(--nbase)}
+.dot.inst{background:transparent;border:2px dashed var(--accent)}
+.idx{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px;padding:0;list-style:none}
+.idx a{display:flex;gap:8px;align-items:baseline;text-decoration:none;color:var(--fg);border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 12px;font-weight:500;font-size:.92rem}
+.idx a b{font-family:var(--font-mono);color:var(--accent);font-size:.78rem}
+.idx a:hover{border-color:var(--accent)}
+
+/* lessons */
+section.lesson{border-top:1px solid var(--line);padding-block:44px 8px;display:flex;flex-direction:column;gap:20px}
+.lesson>header{display:flex;flex-direction:column;gap:8px}
+.lesson h2{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:700;letter-spacing:-.01em}
+.lesson>header p{color:var(--muted);margin:0}
+.steps{margin:0;padding-left:22px;max-width:65ch}
+.steps li{margin-bottom:8px;padding-left:4px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:7px}
+.widget{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+.widget.one{grid-template-columns:minmax(0,1fr)}
+.widget h4{font-size:1.05rem;margin-bottom:8px}
+.widget .info p{margin-bottom:8px}
+.cap{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+
+/* tree */
+.tree{display:flex;flex-direction:column;gap:2px}
+.tn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;cursor:pointer;padding:7px 10px 7px calc(10px + var(--d,0) * 22px);border-radius:5px;font-family:var(--font-mono);font-size:.85rem;border:1px solid transparent}
+.tn:hover{background:var(--surface-2)}
+.tn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.tn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tn .ty{color:var(--muted);font-size:.76rem;margin-left:auto;padding-left:10px;text-align:right}
+.tn.static{cursor:default}
+.tn.static:hover{background:none}
+
+/* buttons */
+.btn{font:inherit;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:6px;padding:8px 14px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent)}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font:inherit;font-size:.86rem;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:5px 12px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+/* editor tour */
+.svgwrap{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px}
+.svgwrap svg{display:block;width:100%;height:auto}
+.reg{cursor:pointer}
+.reg .bg{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5}
+.reg:hover .bg{stroke:var(--accent)}
+.reg.sel .bg{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.5}
+.reg:focus-visible{outline:none}
+.reg:focus-visible .bg{stroke:var(--accent);stroke-width:3}
+.reg text{fill:var(--muted);font-family:var(--font-mono);font-size:13px;pointer-events:none}
+.reg .ln{fill:var(--line);pointer-events:none}
+.reg .hot{fill:var(--accent);pointer-events:none}
+
+/* tables */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.tbl{width:100%;border-collapse:collapse;min-width:620px;font-size:.93rem}
+.tbl th{text-align:left;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td:first-child{color:var(--muted);width:19%}
+.tbl td code{white-space:pre-wrap}
+.life{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.life .panel h4{font-family:var(--font-mono);font-size:.92rem;margin-bottom:6px;color:var(--code-f)}
+.life .panel{background:var(--surface)}
+.life .panel h4{color:var(--accent)}
+.life .panel p{font-size:.92rem;margin:0}
+
+/* movement */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:10px}
+#mv-canvas{display:block;width:100%;max-width:100%;height:auto;border-radius:4px;background:var(--surface-2);cursor:pointer;touch-action:none}
+#mv-canvas:focus-visible{outline:2px solid var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.stat{border:1px solid var(--line);border-radius:5px;padding:6px 10px;min-width:0}
+.stat small{display:block;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat b{font-family:var(--font-mono);font-size:.95rem;font-variant-numeric:tabular-nums;font-weight:600}
+.ctrl{display:flex;flex-direction:column;gap:14px}
+.ctrl label{display:flex;flex-direction:column;gap:4px;font-size:.9rem;font-weight:500}
+.ctrl label.inline{flex-direction:row;align-items:center;gap:8px}
+.ctrl input[type=range]{width:100%;accent-color:var(--accent)}
+.ctrl select{font:inherit;padding:6px 8px;border-radius:5px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.ctrl input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px}
+.dpad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:6px;justify-content:center}
+.dpad button{font:inherit;font-size:1.1rem;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;touch-action:none;user-select:none}
+.dpad button:active{background:var(--accent-soft);border-color:var(--accent)}
+.dpad .u{grid-column:2;grid-row:1}.dpad .l{grid-column:1;grid-row:2}.dpad .d{grid-column:2;grid-row:2}.dpad .r{grid-column:3;grid-row:2}
+.hint{font-size:.85rem;color:var(--muted)}
+
+/* signals */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:10px 14px;transition:background .25s}
+.hud.pulse{background:var(--accent-soft)}
+.hud b{font-family:var(--font-mono);font-size:1.2rem;font-variant-numeric:tabular-nums}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;min-height:190px}
+.log li{font-family:var(--font-mono);font-size:.8rem;padding:6px 10px;border-radius:4px;border-left:3px solid var(--line);background:var(--surface-2);overflow-wrap:anywhere}
+.log li.emit{border-left-color:var(--accent)}
+.log li.recv{border-left-color:var(--good)}
+.log li.lost{border-left-color:var(--bad)}
+.log li.empty{color:var(--muted);border-left-color:var(--line)}
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--font-mono);font-size:.8rem}
+.flow .node{border:1px solid var(--line);border-radius:5px;padding:6px 10px;background:var(--surface-2)}
+.flow .wire{flex:1;min-width:48px;height:2px;background:var(--accent);position:relative}
+.flow .wire.off{background:repeating-linear-gradient(90deg,var(--bad) 0 6px,transparent 6px 12px)}
+
+/* quiz */
+.quiz{display:flex;flex-direction:column;gap:16px}
+.q h4{font-size:1.05rem;margin-bottom:10px;font-weight:600}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;padding:9px 12px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.ok{border-color:var(--good);background:var(--surface-2)}
+.opt.no{border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.exp{margin-top:8px;font-size:.92rem;color:var(--muted)}
+.exp b.ok{color:var(--good)} .exp b.no{color:var(--bad)}
+.score{font-family:var(--font-display);font-size:1.2rem;font-weight:700}
+
+.next ul{margin:0 0 12px;padding-left:20px;max-width:65ch}
+.next li{margin-bottom:6px}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .widget{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion: reduce){
+  .hud{transition:none}
+}
+</style>
+<style>
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.hero-s{padding-block:12px 36px;display:flex;flex-direction:column;gap:12px}
+.hero-s h1{font-size:clamp(2.2rem,6vw,3.7rem);font-weight:700;letter-spacing:-.02em}
+.hero-s .lead{font-size:1.1rem;color:var(--muted);max-width:62ch}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.pipe{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.pstep{all:unset;box-sizing:border-box;cursor:pointer;flex:1 1 140px;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.pstep:hover{border-color:var(--accent)}
+.pstep:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pstep b{font-family:var(--font-mono);font-size:.72rem;color:var(--accent);letter-spacing:.08em}
+.pstep span{font-size:.9rem;line-height:1.3}
+.pstep[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.pstep.past{border-color:var(--good)}
+.pnav{display:flex;gap:8px;margin-top:12px}
+.file-tag{display:inline-block;font-family:var(--font-mono);font-size:.74rem;color:var(--muted);margin-bottom:6px}
+.codebox{position:relative}
+.copy{position:absolute;top:8px;right:8px;font:inherit;font-size:.74rem;font-family:var(--font-mono);cursor:pointer;border:1px solid var(--code-dim);background:transparent;color:var(--code-fg);border-radius:4px;padding:3px 8px}
+.copy:hover{border-color:var(--code-fg)}
+.todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;counter-reset:s}
+.todo li{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:14px 16px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px}
+.todo li.done{border-color:var(--good)}
+.todo input{grid-row:1/3;margin-top:4px;width:20px;height:20px;accent-color:var(--accent)}
+.todo h4{font-size:1.05rem;font-weight:600}
+.todo .body{display:flex;flex-direction:column;gap:8px;min-width:0}
+.todo .body p{margin:0;font-size:.95rem}
+.todo .body ul{margin:0;padding-left:20px;font-size:.95rem}
+.todo .body li{display:list-item;border:0;background:none;padding:0;margin-bottom:3px}
+.errlist{display:flex;flex-direction:column;gap:6px}
+.eb{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;padding:9px 12px;font-family:var(--font-mono);font-size:.78rem;line-height:1.4;overflow-wrap:anywhere}
+.eb:hover{border-color:var(--accent)}
+.eb[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.eb.silent{font-family:var(--font-body);font-size:.9rem}
+.errdetail{display:flex;flex-direction:column;gap:12px}
+.errdetail h4{font-size:.72rem;font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:2px}
+.errdetail p{margin:0}
+.errdetail ol{margin:0;padding-left:20px}
+.errdetail ol li{margin-bottom:4px}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<style>
+canvas.cv{display:block;width:100%;max-width:100%;height:auto;border-radius:4px;background:var(--surface-2)}
+.stage2{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:10px}
+.rec{display:flex;flex-wrap:wrap;gap:8px}
+.tl{position:relative;border:1px solid var(--line);border-radius:6px;background:var(--surface);padding:10px 10px 8px;display:flex;flex-direction:column;gap:5px}
+.tl .tr{position:relative;height:20px;border-radius:3px;background:var(--surface-2)}
+.tl .bar{position:absolute;top:2px;bottom:2px;border-radius:3px;background:var(--accent);color:var(--on-accent);font-family:var(--font-mono);font-size:.68rem;line-height:16px;padding:0 6px;overflow:hidden;white-space:nowrap;min-width:3px}
+.tl .bar.cb{background:var(--good)}
+.tl .head{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.7rem;color:var(--muted)}
+.tl .cursor{position:absolute;top:0;bottom:0;width:2px;background:var(--bad);pointer-events:none}
+.tl .area{position:relative;display:flex;flex-direction:column;gap:5px}
+.status{font-size:.9rem;color:var(--muted);margin:0;min-height:1.4em}
+</style>
+
+<div class="wrap">
+
+  <div class="hero-s">
+    <span class="eyebrow">Aula 13 · animação por código</span>
+    <h1>Animações com Tween</h1>
+    <p class="lead">Dá para animar sem criar nenhuma imagem: basta dizer "leve esta propriedade deste valor até aquele, em tantos segundos". Quem faz isso é o <code>Tween</code>. Com ele a moeda vai crescer e sumir ao ser coletada, o inimigo vai nascer crescendo e o placar vai piscar. Tudo com poucas linhas, e dá para testar na hora.</p>
+    <nav aria-label="Seções"><ol class="idx" style="margin-top:8px">
+      <li><a href="#ideia"><b>1</b>A ideia</a></li>
+      <li><a href="#sequencia"><b>2</b>Em sequência</a></li>
+      <li><a href="#passos"><b>3</b>No editor</a></li>
+      <li><a href="#erros"><b>4</b>Deu erro?</a></li>
+    </ol></nav>
+  </div>
+
+  <!-- 1 -->
+  <section class="lesson" id="ideia">
+    <header>
+      <span class="eyebrow">Parte 1</span>
+      <h2>A ideia: de A até B, com um estilo de movimento</h2>
+      <p>A linha principal é <code>tween.tween_property(objeto, "propriedade", valor_final, duração)</code>. O valor inicial é o que a propriedade tem <b>no momento em que o tween começa</b>. Você pode animar qualquer propriedade numérica ou de cor: <code>position</code>, <code>scale</code>, <code>rotation</code>, <code>modulate</code>. Para mexer em uma parte só, use <code>"position:x"</code> ou <code>"modulate:a"</code> (o canal de transparência).</p>
+      <p>O que muda a sensação é a <b>transição</b> (a forma da curva, <code>Tween.TRANS_*</code>) e o <b>easing</b> (em que ponto dela a velocidade muda, <code>Tween.EASE_*</code>). Teste as combinações abaixo.</p>
+    </header>
+    <div class="two">
+      <div class="stage2">
+        <canvas class="cv" id="e1-obj" width="480" height="150" aria-label="Quadrado animado pelo tween"></canvas>
+        <canvas class="cv" id="e1-curve" width="480" height="180" aria-label="Gráfico da curva escolhida"></canvas>
+        <div class="row">
+          <button class="btn" type="button" id="e1-play">Tocar</button>
+          <span class="small" id="e1-time"></span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <div class="panel ctrl">
+          <label for="e1-prop"><span>Propriedade animada</span>
+            <select id="e1-prop">
+              <option value="px">position:x</option>
+              <option value="sc">scale</option>
+              <option value="al">modulate:a</option>
+              <option value="rot">rotation</option>
+            </select></label>
+          <label for="e1-trans"><span>Transição</span>
+            <select id="e1-trans">
+              <option>LINEAR</option><option>SINE</option><option selected>QUAD</option><option>CUBIC</option><option>EXPO</option><option>BACK</option><option>ELASTIC</option><option>BOUNCE</option>
+            </select></label>
+          <label for="e1-ease"><span>Easing</span>
+            <select id="e1-ease">
+              <option>IN</option><option selected>OUT</option><option>IN_OUT</option><option>OUT_IN</option>
+            </select></label>
+          <label for="e1-dur"><span>Duração: <b id="e1-dur-v">1.0</b> s</span>
+            <input id="e1-dur" type="range" min="0.2" max="3" step="0.1" value="1"></label>
+        </div>
+        <pre id="e1-code"></pre>
+        <p class="small">A Godot também tem <code>TRANS_SPRING</code>, que não está no simulador. As curvas aqui seguem as fórmulas clássicas de easing e são uma aproximação: nas mais elásticas (<code>ELASTIC</code> e <code>BACK</code>) os valores exatos da Godot podem diferir um pouco. Para a conferência final, rode no seu editor.</p>
+      </div>
+    </div>
+    <div class="scroll"><table class="tbl" style="min-width:540px">
+      <thead><tr><th>Easing</th><th>O que faz</th></tr></thead>
+      <tbody>
+        <tr><td><code>EASE_IN</code></td><td>Começa devagar e termina rápido.</td></tr>
+        <tr><td><code>EASE_OUT</code></td><td>Começa rápido e termina devagar. É o que costuma parecer mais natural para algo que aparece ou para.</td></tr>
+        <tr><td><code>EASE_IN_OUT</code></td><td>Devagar nas duas pontas. É o padrão do <code>Tween</code>.</td></tr>
+        <tr><td><code>EASE_OUT_IN</code></td><td>Rápido nas duas pontas e devagar no meio.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small">Detalhe importante: <code>set_trans()</code> e <code>set_ease()</code> no próprio <code>Tween</code> valem para os <code>tween_property</code> escritos <b>depois</b> deles. Chame-os antes.</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="lesson" id="sequencia">
+    <header>
+      <span class="eyebrow">Parte 2</span>
+      <h2>Em sequência ou ao mesmo tempo</h2>
+      <p>Por padrão, cada <code>tween_property</code> espera o anterior terminar. Existem três formas de mudar isso:</p>
+      <ul class="steps" style="margin:0 0 4px">
+        <li><code>set_parallel(true)</code>: a partir dali, os próximos rodam juntos.</li>
+        <li><code>parallel()</code>: só o <b>próximo</b> roda junto com o anterior.</li>
+        <li><code>chain()</code>: depois de <code>set_parallel(true)</code>, o próximo espera o grupo anterior acabar.</li>
+      </ul>
+      <p>Para executar uma função no fim (por exemplo, <code>queue_free</code>), use <code>tween_callback(função)</code>. Escolha uma receita, toque, e veja a linha do tempo.</p>
+    </header>
+    <div class="two">
+      <div class="stage2">
+        <div class="rec" id="e2-rec" role="group" aria-label="Receitas"></div>
+        <canvas class="cv" id="e2-cv" width="480" height="270" aria-label="Objeto animado pela receita"></canvas>
+        <div class="row">
+          <button class="btn" type="button" id="e2-play">Tocar</button>
+          <button class="btn ghost" type="button" id="e2-stop">Parar (kill)</button>
+        </div>
+        <p class="status" id="e2-status" aria-live="polite"></p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <div class="tl" aria-label="Linha do tempo da receita">
+          <div class="head"><span>0 s</span><span id="e2-total"></span></div>
+          <div class="area" id="e2-tl"></div>
+        </div>
+        <pre id="e2-code"></pre>
+        <p class="small" id="e2-note"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lesson" id="passos">
+    <header>
+      <span class="eyebrow">Parte 3</span>
+      <h2>Fazendo no seu projeto</h2>
+      <p>Cinco passos. Marque cada um quando terminar.</p>
+    </header>
+    <ol class="todo" id="todo">
+      <li>
+        <input type="checkbox" id="c1" aria-labelledby="h1s">
+        <h4 id="h1s">Moeda que cresce e some ao ser coletada</h4>
+        <div class="body">
+          <p>No <code>moeda.gd</code>, substitua o <code>_on_body_entered</code> por esta versão. A moeda sai do grupo e desliga a colisão na hora, anima por 0,25 s e só então se apaga:</p>
+          <div class="codebox"><button class="copy" type="button" data-for="code-moeda">Copiar</button>
+<pre id="code-moeda" data-gd>var coletada_ja := false
+
+func _on_body_entered(body):
+	if coletada_ja:
+		return
+	if body is CharacterBody2D:
+		coletada_ja = true
+		remove_from_group("moedas")
+		coletada.emit(1)
+		$CollisionShape2D.set_deferred("disabled", true)
+		var tween := create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(self, "scale", scale * 1.8, 0.25)
+		tween.tween_property(self, "modulate:a", 0.0, 0.25)
+		tween.chain().tween_callback(queue_free)</pre></div>
+          <p class="small">O <code>remove_from_group</code> evita que a moeda que está sumindo conte no limite de 6 do seu spawn. O <code>scale * 1.8</code> multiplica a escala que a moeda já tem, em vez de impor um valor fixo. Se a sua moeda não usa o grupo, pode apagar essa linha.</p>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" id="c2" aria-labelledby="h2s">
+        <h4 id="h2s">Inimigo que nasce crescendo</h4>
+        <div class="body">
+          <p>No <code>inimigo.gd</code>, anime o <code>Sprite2D</code> filho: guarde a escala dele, comece em zero e anime de volta. Acrescente estas linhas ao <code>_ready()</code> que você já tem:</p>
+          <div class="codebox"><button class="copy" type="button" data-for="code-ini">Copiar</button>
+<pre id="code-ini" data-gd>func _ready():
+	alvo = get_tree().get_first_node_in_group("jogador")
+	var escala_final = $Sprite2D.scale
+	$Sprite2D.scale = Vector2.ZERO
+	var tween := create_tween()
+	tween.set_trans(Tween.TRANS_BACK)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property($Sprite2D, "scale", escala_final, 0.4)</pre></div>
+          <p class="small">A animação é no <code>Sprite2D</code>, e não na raiz, para não mexer na escala da forma de colisão. Repare também na ordem: <code>set_trans</code> e <code>set_ease</code> vêm antes do <code>tween_property</code>.</p>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" id="c3" aria-labelledby="h3s">
+        <h4 id="h3s">Placar que pisca ao ganhar ponto</h4>
+        <div class="body">
+          <p>No <code>level.gd</code>, acrescente duas linhas no fim da função que soma os pontos, trocando <code>label</code> pelo nome do seu Label:</p>
+          <div class="codebox"><button class="copy" type="button" data-for="code-lvl">Copiar</button>
+<pre id="code-lvl" data-gd>func _on_moeda_coletada(valor):
+	pontos += valor
+	label.text = "Pontos: %d" % pontos
+	label.modulate = Color.YELLOW
+	create_tween().tween_property(label, "modulate", Color.WHITE, 0.3)</pre></div>
+          <p class="small">Aqui o tween é criado e usado em uma linha só, sem guardar em variável. Funciona porque não precisamos mais mexer nele depois.</p>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" id="c4" aria-labelledby="h4s">
+        <h4 id="h4s">Teste</h4>
+        <div class="body">
+          <p>Com <b>F5</b>: ao coletar, a moeda deve crescer e esvaziar. O inimigo novo deve surgir crescendo. O placar deve piscar de amarelo para branco. Aperte Esc no meio de uma animação: ela congela junto com o jogo. Isso acontece porque o tween criado com <code>create_tween()</code> fica preso ao nó e segue a mesma regra de pausa dele.</p>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" id="c5" aria-labelledby="h5s">
+        <h4 id="h5s">Desafios</h4>
+        <div class="body">
+          <ul>
+            <li>Faça o inimigo piscar em vermelho quando nasce: <code>modulate = Color.RED</code> e depois um tween de volta para <code>Color.WHITE</code> em 0,5 s.</li>
+            <li>Faça a tela de pausa aparecer suavemente. O <code>CanvasLayer</code> não tem <code>modulate</code>, mas o <code>Control</code> filho tem: ao abrir, ponha <code>modulate.a = 0.0</code> nele e leve até <code>1.0</code> em 0,3 s. A cena Pausa tem Process Mode = Always, então o tween continua rodando com o jogo pausado.</li>
+            <li>Faça o Label "Novo recorde!" da tela de fim pulsar sem parar: crie um tween com <code>set_loops()</code> alternando o <code>modulate:a</code> entre 1.0 e 0.3, cada passo em 0,5 s.</li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- 4 -->
+  <section class="lesson" id="erros">
+    <header>
+      <span class="eyebrow">Parte 4</span>
+      <h2>Deu erro? Escolha o sintoma</h2>
+      <p>Se a sua mensagem não estiver aqui, copie o texto exato do painel Saída ou Depurador e me mande.</p>
+    </header>
+    <div class="two">
+      <div class="errlist" id="errlist"></div>
+      <div class="panel errdetail" id="errdetail" aria-live="polite"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s)};
+  var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  var KW=/^(extends|func|var|const|signal|if|elif|else|for|while|in|return|pass|class_name|class|match|and|or|not|true|false|null|self|await|static|enum|as|is)$/;
+  function hl(src){
+    var re=/(#.*)|("(?:[^"\\]|\\.)*")|(@\w+)|(\$[\w\/]+)|(%\w+)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_]\w*)(\s*\()?/g;
+    var out='',last=0,m;
+    while((m=re.exec(src))){
+      out+=esc(src.slice(last,m.index));
+      if(m[1]) out+='<span class="c">'+esc(m[1])+'</span>';
+      else if(m[2]) out+='<span class="s">'+esc(m[2])+'</span>';
+      else if(m[3]) out+='<span class="k">'+esc(m[3])+'</span>';
+      else if(m[4]) out+='<span class="t">'+esc(m[4])+'</span>';
+      else if(m[5]) out+=esc(m[5]);
+      else if(m[6]) out+='<span class="n">'+esc(m[6])+'</span>';
+      else {
+        var w=m[7], call=m[8]||'';
+        if(KW.test(w)) out+='<span class="k">'+w+'</span>'+esc(call);
+        else if(/^[A-Z]/.test(w)) out+='<span class="t">'+w+'</span>'+esc(call);
+        else if(call) out+='<span class="f">'+w+'</span>'+esc(call);
+        else out+=w;
+      }
+      last=re.lastIndex;
+    }
+    return out+esc(src.slice(last));
+  }
+  $$('[data-gd]').forEach(function(el){el.innerHTML=hl(el.textContent)});
+  function setCode(el,src){el.innerHTML='<code>'+hl(src)+'</code>'}
+  $$('.copy').forEach(function(b){
+    b.addEventListener('click',function(){
+      var el=document.getElementById(b.getAttribute('data-for')), txt=el.textContent;
+      function flash(t){b.textContent=t; setTimeout(function(){b.textContent='Copiar'},1400)}
+      function fallback(){
+        var r=document.createRange(); r.selectNodeContents(el);
+        var s=window.getSelection(); s.removeAllRanges(); s.addRange(r); flash('Selecionado');
+      }
+      try{ navigator.clipboard.writeText(txt).then(function(){flash('Copiado')},fallback); }catch(e){fallback()}
+    });
+  });
+  $$('#todo input').forEach(function(c){
+    c.addEventListener('change',function(){c.closest('li').classList.toggle('done',c.checked)});
+  });
+  function tok(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+  /* ---------- easing ---------- */
+  function bOut(t){var n1=7.5625,d1=2.75; if(t<1/d1) return n1*t*t; if(t<2/d1){t-=1.5/d1; return n1*t*t+0.75} if(t<2.5/d1){t-=2.25/d1; return n1*t*t+0.9375} t-=2.625/d1; return n1*t*t+0.984375}
+  var IN={
+    LINEAR:function(t){return t},
+    SINE:function(t){return 1-Math.cos(t*Math.PI/2)},
+    QUAD:function(t){return t*t},
+    CUBIC:function(t){return t*t*t},
+    EXPO:function(t){return t===0?0:Math.pow(2,10*t-10)},
+    BACK:function(t){var c1=1.70158,c3=c1+1; return c3*t*t*t-c1*t*t},
+    ELASTIC:function(t){if(t===0)return 0; if(t===1)return 1; return -Math.pow(2,10*t-10)*Math.sin((t*10-10.75)*(2*Math.PI)/3)},
+    BOUNCE:function(t){return 1-bOut(1-t)}
+  };
+  function ease(trans,kind,t){
+    var f=IN[trans]; t=clamp(t,0,1);
+    if(kind==='IN') return f(t);
+    if(kind==='OUT') return 1-f(1-t);
+    if(kind==='IN_OUT') return t<0.5? f(2*t)/2 : 1-f(2*(1-t))/2;
+    return t<0.5? (1-f(1-2*t))/2 : (1+f(2*t-1))/2;
+  }
+
+  /* ---------- parte 1 ---------- */
+  var o1=$('#e1-obj'), x1=o1.getContext('2d'), c1=$('#e1-curve'), y1=c1.getContext('2d');
+  var P1={prop:'px',trans:'QUAD',ease:'OUT',dur:1}, play1=null;
+  var PINFO={
+    px:{name:'position:x',to:'400.0',draw:function(v){return {x:40+v*400,s:1,a:1,r:0}}},
+    sc:{name:'scale',to:'Vector2(2.5, 2.5)',draw:function(v){return {x:240,s:1+1.5*v,a:1,r:0}}},
+    al:{name:'modulate:a',to:'0.0',draw:function(v){return {x:240,s:1,a:1-v,r:0}}},
+    rot:{name:'rotation',to:'TAU',draw:function(v){return {x:240,s:1,a:1,r:v*Math.PI*2}}}
+  };
+  function drawObj(v){
+    var W=o1.width,H=o1.height;
+    x1.fillStyle=tok('--surface-2'); x1.fillRect(0,0,W,H);
+    x1.strokeStyle=tok('--line'); x1.lineWidth=1; x1.beginPath();
+    for(var gx=30;gx<W;gx+=30){x1.moveTo(gx+.5,0);x1.lineTo(gx+.5,H)} x1.stroke();
+    var d=PINFO[P1.prop].draw(v);
+    x1.save(); x1.globalAlpha=clamp(d.a,0,1); x1.translate(d.x,H/2); x1.rotate(d.r); x1.scale(d.s,d.s);
+    x1.fillStyle=tok('--n2d'); x1.fillRect(-20,-20,40,40); x1.restore();
+  }
+  function drawCurve(t){
+    var W=c1.width,H=c1.height,L=40,R=W-16,T=20,B=H-26, gw=R-L, gh=B-T;
+    y1.fillStyle=tok('--surface-2'); y1.fillRect(0,0,W,H);
+    var minV=0,maxV=1,i,tt,vv;
+    for(i=0;i<=100;i++){vv=ease(P1.trans,P1.ease,i/100); if(vv<minV)minV=vv; if(vv>maxV)maxV=vv}
+    var pad=(maxV-minV)*0.08; minV-=pad; maxV+=pad;
+    function px(u){return L+u*gw} function py(v){return B-(v-minV)/(maxV-minV)*gh}
+    y1.strokeStyle=tok('--line'); y1.lineWidth=1; y1.beginPath();
+    y1.moveTo(L,py(0)); y1.lineTo(R,py(0)); y1.moveTo(L,py(1)); y1.lineTo(R,py(1)); y1.stroke();
+    y1.fillStyle=tok('--muted'); y1.font='11px '+getComputedStyle(document.body).fontFamily;
+    y1.fillText('valor final',L+4,py(1)-4); y1.fillText('valor inicial',L+4,py(0)+12);
+    y1.fillText('tempo →',R-48,B+16);
+    y1.strokeStyle=tok('--accent'); y1.lineWidth=2.5; y1.beginPath();
+    for(i=0;i<=120;i++){tt=i/120; vv=ease(P1.trans,P1.ease,tt); if(i===0)y1.moveTo(px(tt),py(vv)); else y1.lineTo(px(tt),py(vv))}
+    y1.stroke();
+    if(t!==null){
+      var cv=ease(P1.trans,P1.ease,t);
+      y1.fillStyle=tok('--bad'); y1.beginPath(); y1.arc(px(t),py(cv),6,0,Math.PI*2); y1.fill();
+    }
+  }
+  function code1(){
+    var p=PINFO[P1.prop];
+    setCode($('#e1-code'),'var tween := create_tween()\ntween.set_trans(Tween.TRANS_'+P1.trans+')\ntween.set_ease(Tween.EASE_'+P1.ease+')\ntween.tween_property($Quadrado, "'+p.name+'", '+p.to+', '+P1.dur.toFixed(1)+')');
+    if(!play1){drawObj(1*0); drawCurve(null)}
+  }
+  function startPlay1(){
+    var t0=null; if(play1) cancelAnimationFrame(play1.id);
+    play1={};
+    function tick(ts){
+      if(t0===null) t0=ts;
+      var t=clamp((ts-t0)/1000/P1.dur,0,1);
+      drawObj(ease(P1.trans,P1.ease,t)); drawCurve(t);
+      $('#e1-time').textContent=(t*P1.dur).toFixed(2)+' s';
+      if(t<1) play1.id=requestAnimationFrame(tick);
+      else {play1=null; $('#e1-time').textContent='terminou (finished)';}
+    }
+    play1.id=requestAnimationFrame(tick);
+  }
+  $('#e1-prop').addEventListener('change',function(e){P1.prop=e.target.value; code1()});
+  $('#e1-trans').addEventListener('change',function(e){P1.trans=e.target.value; code1()});
+  $('#e1-ease').addEventListener('change',function(e){P1.ease=e.target.value; code1()});
+  $('#e1-dur').addEventListener('input',function(e){P1.dur=+e.target.value; $('#e1-dur-v').textContent=P1.dur.toFixed(1); code1()});
+  $('#e1-play').addEventListener('click',startPlay1);
+  code1();
+
+  /* ---------- parte 2: receitas ---------- */
+  var REC=[
+    {id:'pop',name:'Coletar moeda',init:{sc:1,a:1,red:0,y:135},loops:1,
+     groups:[[{p:'sc',to:1.8,d:0.25,tr:'LINEAR',ea:'IN_OUT',lbl:'scale'},{p:'a',to:0,d:0.25,tr:'LINEAR',ea:'IN_OUT',lbl:'modulate:a'}],[{cb:'queue_free',d:0,lbl:'callback'}]],
+     code:'var tween := create_tween()\ntween.set_parallel(true)\ntween.tween_property(self, "scale", scale * 1.8, 0.25)\ntween.tween_property(self, "modulate:a", 0.0, 0.25)\ntween.chain().tween_callback(queue_free)',
+     note:'<code>set_parallel(true)</code> faz as duas animações rodarem juntas. O <code>chain()</code> faz o callback esperar as duas acabarem. Sem o <code>tween_callback</code>, a moeda seria apagada antes de animar.'},
+    {id:'blink',name:'Piscar ao levar dano',init:{sc:1,a:1,red:0,y:135},loops:3,
+     groups:[[{p:'red',to:1,d:0.1,tr:'LINEAR',ea:'IN_OUT',lbl:'modulate → vermelho'}],[{p:'red',to:0,d:0.1,tr:'LINEAR',ea:'IN_OUT',lbl:'modulate → branco'}]],
+     code:'var tween := create_tween()\ntween.set_loops(3)\ntween.tween_property(self, "modulate", Color.RED, 0.1)\ntween.tween_property(self, "modulate", Color.WHITE, 0.1)',
+     note:'Sem <code>set_parallel</code>, os passos rodam um depois do outro. O <code>set_loops(3)</code> repete a sequência três vezes e depois emite <code>finished</code>.'},
+    {id:'pulse',name:'Pulsar sem parar',init:{sc:1,a:1,red:0,y:135},loops:0,
+     groups:[[{p:'sc',to:1.25,d:0.5,tr:'SINE',ea:'IN_OUT',lbl:'scale ↑'}],[{p:'sc',to:1,d:0.5,tr:'SINE',ea:'IN_OUT',lbl:'scale ↓'}]],
+     code:'var tween := create_tween()\ntween.set_loops()\ntween.set_trans(Tween.TRANS_SINE)\ntween.tween_property(self, "scale", scale * 1.25, 0.5)\ntween.tween_property(self, "scale", scale, 0.5)',
+     note:'<code>set_loops()</code> sem número repete para sempre. Um loop infinito nunca emite <code>finished</code> e só para com <code>kill()</code> ou quando o nó é apagado. Use o botão "Parar".'},
+    {id:'bounce',name:'Quicar no chão',init:{sc:1,a:1,red:0,y:40},loops:1,
+     groups:[[{p:'y',to:200,d:0.9,tr:'BOUNCE',ea:'OUT',lbl:'position:y'}]],
+     code:'position.y = 40.0\nvar tween := create_tween()\ntween.set_trans(Tween.TRANS_BOUNCE)\ntween.set_ease(Tween.EASE_OUT)\ntween.tween_property(self, "position:y", 200.0, 0.9)',
+     note:'A combinação <code>TRANS_BOUNCE</code> com <code>EASE_OUT</code> dá o efeito de bola quicando. O valor inicial é o <code>position.y</code> que o nó tem quando o tween começa.'},
+    {id:'born',name:'Nascer crescendo',init:{sc:0,a:1,red:0,y:135},loops:1,
+     groups:[[{p:'sc',to:1,d:0.4,tr:'BACK',ea:'OUT',lbl:'scale'}]],
+     code:'var escala_final = $Sprite2D.scale\n$Sprite2D.scale = Vector2.ZERO\nvar tween := create_tween()\ntween.set_trans(Tween.TRANS_BACK)\ntween.set_ease(Tween.EASE_OUT)\ntween.tween_property($Sprite2D, "scale", escala_final, 0.4)',
+     note:'<code>TRANS_BACK</code> com <code>EASE_OUT</code> passa um pouco do valor final antes de assentar, o que dá a sensação de "pop". É o do inimigo da sua aula, animando o <code>Sprite2D</code>.'}
+  ];
+  var cur=REC[0], anim=null, e2=$('#e2-cv'), x2=e2.getContext('2d'), recBox=$('#e2-rec');
+  REC.forEach(function(r){
+    var b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=r.name; b.setAttribute('data-id',r.id);
+    b.addEventListener('click',function(){pick(r)}); recBox.appendChild(b); r.el=b;
+  });
+  function gdur(g){return g.reduce(function(m,i){return Math.max(m,i.d)},0)}
+  function total1(r){return r.groups.reduce(function(s,g){return s+gdur(g)},0)}
+  function stateAt(r,time){
+    var tot=total1(r), st={sc:r.init.sc,a:r.init.a,red:r.init.red,y:r.init.y}, done=false, freed=false;
+    if(tot===0) return {st:st,done:true,freed:false};
+    var tau=time, iter=0;
+    if(r.loops===0){tau=time%tot}
+    else if(time>=tot*r.loops){tau=tot; done=true}
+    else {tau=time%tot}
+    var start=0, i, g, k, it, from={};
+    for(i=0;i<r.groups.length;i++){
+      g=r.groups[i]; var gd=gdur(g);
+      var startVals={sc:st.sc,a:st.a,red:st.red,y:st.y};
+      if(tau<start && !(done)) break;
+      for(k=0;k<g.length;k++){
+        it=g[k];
+        if(it.cb){ if(tau>=start+gd && (done||tau>=start)) freed=freed||(tau>=start); continue }
+        var p=it.d>0?clamp((tau-start)/it.d,0,1):1;
+        if(tau<start) p=0;
+        st[it.p]=startVals[it.p]+(it.to-startVals[it.p])*ease(it.tr,it.ea,p);
+      }
+      start+=gd;
+    }
+    return {st:st,done:done,freed:freed};
+  }
+  function drawE2(s){
+    var W=e2.width,H=e2.height;
+    x2.fillStyle=tok('--surface-2'); x2.fillRect(0,0,W,H);
+    x2.strokeStyle=tok('--line'); x2.lineWidth=1; x2.beginPath();
+    for(var gx=30;gx<W;gx+=30){x2.moveTo(gx+.5,0);x2.lineTo(gx+.5,H)}
+    for(var gy=30;gy<H;gy+=30){x2.moveTo(0,gy+.5);x2.lineTo(W,gy+.5)}
+    x2.stroke();
+    if(s.freed){
+      x2.fillStyle=tok('--muted'); x2.font='14px '+getComputedStyle(document.body).fontFamily; x2.textAlign='center';
+      x2.fillText('queue_free(): o nó deixou de existir',W/2,H/2); x2.textAlign='start'; return;
+    }
+    var st=s.st, sz=48*st.sc, al=clamp(st.a,0,1);
+    x2.save(); x2.translate(W/2,st.y);
+    x2.globalAlpha=al*(1-clamp(st.red,0,1)); x2.fillStyle=tok('--n2d'); x2.fillRect(-sz/2,-sz/2,sz,sz);
+    x2.globalAlpha=al*clamp(st.red,0,1); x2.fillStyle=tok('--bad'); x2.fillRect(-sz/2,-sz/2,sz,sz);
+    x2.restore();
+  }
+  function renderTL(r){
+    var tot=total1(r), box=$('#e2-tl'), h='', start=0;
+    $('#e2-total').textContent=tot.toFixed(2)+' s'+(r.loops===0?' (repete para sempre)':(r.loops>1?' × '+r.loops:''));
+    box.innerHTML='';
+    r.groups.forEach(function(g){
+      g.forEach(function(it){
+        var tr=document.createElement('div'); tr.className='tr';
+        var bar=document.createElement('div'); bar.className='bar'+(it.cb?' cb':'');
+        var w=it.d>0?(it.d/tot*100):0;
+        bar.style.left=(start/tot*100)+'%';
+        bar.style.width=it.cb?'3%':w+'%';
+        if(it.cb) bar.style.left=Math.min(97,start/tot*100)+'%';
+        bar.textContent=it.lbl+(it.cb?': '+it.cb:''); bar.title=it.lbl;
+        tr.appendChild(bar); box.appendChild(tr);
+      });
+      start+=gdur(g);
+    });
+    var cur=document.createElement('div'); cur.className='cursor'; cur.id='e2-cursor'; cur.style.left='0%'; box.appendChild(cur);
+  }
+  function pick(r){
+    cur=r; if(anim){cancelAnimationFrame(anim.id); anim=null}
+    REC.forEach(function(x){x.el.setAttribute('aria-pressed',String(x===r))});
+    setCode($('#e2-code'),r.code); $('#e2-note').innerHTML=r.note;
+    renderTL(r); drawE2(stateAt(r,0)); $('#e2-status').textContent='Clique em Tocar.';
+  }
+  function playE2(){
+    if(anim) cancelAnimationFrame(anim.id);
+    var r=cur, t0=null; anim={};
+    function tick(ts){
+      if(t0===null) t0=ts;
+      var time=(ts-t0)/1000, s=stateAt(r,time); drawE2(s);
+      var tot=total1(r), curE=$('#e2-cursor');
+      if(curE) curE.style.left=(r.loops===0? (time%tot)/tot*100 : clamp(time%(tot+1e-9)/tot,0,1)*100)+'%';
+      if(s.done){
+        if(curE) curE.style.left='100%';
+        $('#e2-status').textContent=s.freed?'O tween terminou e o nó foi apagado.':'finished: o tween terminou.'; anim=null; return;
+      }
+      $('#e2-status').textContent=r.loops===0?'Loop infinito: finished nunca é emitido. Use "Parar".':'Rodando…';
+      anim.id=requestAnimationFrame(tick);
+    }
+    anim.id=requestAnimationFrame(tick);
+  }
+  $('#e2-play').addEventListener('click',playE2);
+  $('#e2-stop').addEventListener('click',function(){
+    if(anim){cancelAnimationFrame(anim.id); anim=null; $('#e2-status').textContent='tween.kill(): a animação foi interrompida no meio.'}
+    else $('#e2-status').textContent='Não há tween rodando.';
+  });
+  pick(REC[0]);
+
+  /* ---------- erros ---------- */
+  var ERR=[
+    {m:'A moeda some na hora, sem animação.',silent:true,
+     why:'O <code>queue_free()</code> foi chamado logo depois de criar o tween. Como o tween criado com <code>create_tween()</code> fica preso ao nó, ele é interrompido quando o nó é apagado, antes de animar.',
+     fix:['Tire o <code>queue_free()</code> da linha seguinte ao tween.','Chame-o no fim da animação com <code>tween_callback(queue_free)</code>, depois de um <code>chain()</code> se estiver em modo paralelo.'],
+     code:'var tween := create_tween()\ntween.tween_property(self, "modulate:a", 0.0, 0.25)\ntween.tween_callback(queue_free)   # só depois de animar'},
+    {m:'As animações rodam todas ao mesmo tempo, mas eu queria uma depois da outra.',silent:true,
+     why:'O <code>set_parallel(true)</code> está ligado para todo o tween, ou há um <code>parallel()</code> antes da linha. Sem eles, cada <code>tween_property</code> espera o anterior.',
+     fix:['Remova o <code>set_parallel(true)</code> se tudo deve ser em sequência.','Se quiser misturar, mantenha o paralelo e use <code>chain()</code> antes do passo que deve esperar.']},
+    {m:'Mudei set_trans / set_ease e nada mudou na animação.',silent:true,
+     why:'No <code>Tween</code>, <code>set_trans()</code> e <code>set_ease()</code> valem para os <code>tween_property</code> escritos <b>depois</b> deles. Se vierem depois, não afetam a linha anterior.',
+     fix:['Mova as duas chamadas para antes do <code>tween_property</code>.'],
+     code:'var tween := create_tween()\ntween.set_trans(Tween.TRANS_BACK)   # antes\ntween.set_ease(Tween.EASE_OUT)\ntween.tween_property(self, "scale", escala_final, 0.4)'},
+    {m:'A moeda ficou gigante (ou minúscula) depois da animação.',silent:true,
+     why:'Você animou para um valor fixo, como <code>Vector2(1.8, 1.8)</code>, mas o nó já tinha outra escala (por exemplo 0.3). O destino precisa ser calculado a partir da escala atual.',
+     fix:['Use <code>scale * 1.8</code> como destino, que multiplica a escala que já existe.','Para voltar ao tamanho original, guarde-o antes: <code>var escala_final := scale</code>.']},
+    {m:'A animação fica estranha ou acumula quando aciono várias vezes seguidas.',silent:true,
+     why:'Cada vez que o evento acontece, um tween novo é criado, e o anterior continua rodando e disputando a mesma propriedade.',
+     fix:['Guarde o tween em uma variável do script e interrompa o antigo antes de criar o novo com <code>kill()</code>.'],
+     code:'var tween: Tween\n\nfunc piscar():\n\tif tween:\n\t\ttween.kill()\n\ttween = create_tween()\n\ttween.tween_property(self, "modulate", Color.WHITE, 0.3)'},
+    {m:'A animação congela quando pauso o jogo.',silent:true,
+     why:'É o comportamento esperado. Um tween criado com <code>create_tween()</code> fica ligado ao nó e processa quando o nó pode processar, conforme o <code>Process Mode</code> dele. Se o nó está pausado, o tween também.',
+     fix:['Para uma animação de interface que deve rodar durante a pausa, crie o tween em um nó com <b>Process Mode = Always</b>, como a cena Pausa.']},
+    {m:'Usei set_loops() e o que vem depois do tween nunca acontece.',silent:true,
+     why:'Um tween em loop infinito nunca emite <code>finished</code>, então nada que dependa disso roda.',
+     fix:['Para repetir um número de vezes, passe o número: <code>set_loops(3)</code>.','Para parar um loop infinito, chame <code>kill()</code> no tween ou apague o nó.']}
+  ];
+  var errlist=$('#errlist'), errdetail=$('#errdetail');
+  ERR.forEach(function(e,i){
+    var b=document.createElement('button'); b.type='button'; b.className='eb'+(e.silent?' silent':'');
+    b.textContent=e.m; b.addEventListener('click',function(){selErr(i)}); errlist.appendChild(b); e.el=b;
+  });
+  function selErr(i){
+    var e=ERR[i];
+    ERR.forEach(function(o,j){o.el.setAttribute('aria-pressed',String(j===i))});
+    var h='<div><h4>O que significa</h4><p>'+e.why+'</p></div>';
+    h+='<div><h4>Como corrigir</h4>'+(e.fix.length>1?'<ol>'+e.fix.map(function(f){return '<li>'+f+'</li>'}).join('')+'</ol>':'<p>'+e.fix[0]+'</p>')+'</div>';
+    if(e.code) h+='<div><h4>Exemplo</h4><pre id="err-code"></pre></div>';
+    errdetail.innerHTML=h;
+    if(e.code) setCode($('#err-code'),e.code);
+  }
+  selErr(0);
+})();
+</script>
+
+</body></html>

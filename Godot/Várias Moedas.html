@@ -1,0 +1,634 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Várias Moedas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: coluna única de ~980px. Cada aula tem um texto curto e um widget para clicar ou mexer.
+   As cores de tipo de nó (azul = 2D, verde = Control, vermelho = 3D) vêm do próprio editor da Godot. */
+:root{
+  --bg:#f1f4f8; --surface:#ffffff; --surface-2:#e7ecf3; --fg:#141d28; --muted:#526173; --line:#d0d8e3;
+  --accent:#2a68a3; --accent-soft:#dbe8f5; --on-accent:#ffffff;
+  --n2d:#3556c8; --ctl:#1d7f37; --n3d:#c13a3e; --nbase:#6a7a8c;
+  --coin:#b57d00; --good:#1d7f37; --bad:#c13a3e;
+  --code-bg:#161c24; --code-fg:#d9e2ec; --code-dim:#7d8fa3;
+  --code-k:#ff7085; --code-f:#57b3ff; --code-s:#ffeb8a; --code-n:#c9a0ff; --code-t:#8eef97;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Figtree','Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151b; --surface:#1a212a; --surface-2:#232c37; --fg:#e5ecf3; --muted:#97a6b7; --line:#2d3947;
+    --accent:#478cbf; --accent-soft:#1f3347; --on-accent:#0c1722;
+    --n2d:#8da5f3; --ctl:#8eef97; --n3d:#fc7f7f; --nbase:#97a6b7;
+    --coin:#f2c14e; --good:#8eef97; --bad:#fc7f7f;
+    --code-bg:#0d1116;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151b; --surface:#1a212a; --surface-2:#232c37; --fg:#e5ecf3; --muted:#97a6b7; --line:#2d3947;
+  --accent:#478cbf; --accent-soft:#1f3347; --on-accent:#0c1722;
+  --n2d:#8da5f3; --ctl:#8eef97; --n3d:#fc7f7f; --nbase:#97a6b7;
+  --coin:#f2c14e; --good:#8eef97; --bad:#fc7f7f;
+  --code-bg:#0d1116;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--fg);
+  font-family:var(--font-body); font-size:16px; line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:28px 72px;
+}
+.wrap{max-width:980px;margin:0 auto}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.15;margin:0;text-wrap:balance}
+p{margin:0 0 12px;max-width:65ch}
+a{color:var(--accent)}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--code-bg);color:var(--code-fg);padding:2px 6px;border-radius:4px;white-space:nowrap}
+pre{font-family:var(--font-mono);font-size:.86rem;line-height:1.55;background:var(--code-bg);color:var(--code-fg);margin:0;padding:14px 16px;border-radius:6px;overflow-x:auto;tab-size:4}
+pre code{background:none;padding:0;font-size:inherit;white-space:pre}
+.c{color:var(--code-dim)} .k{color:var(--code-k)} .f{color:var(--code-f)} .s{color:var(--code-s)} .n{color:var(--code-n)} .t{color:var(--code-t)}
+.small{font-size:.9rem;color:var(--muted)}
+.eyebrow{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:36px;align-items:center;padding-block:20px 44px}
+.hero h1{font-size:clamp(2.6rem,7vw,4.6rem);font-weight:700;letter-spacing:-.02em;margin:10px 0 16px}
+.hero .lead{font-size:1.12rem;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.meta span{font-family:var(--font-mono);font-size:.78rem;border:1px solid var(--line);border-radius:4px;padding:3px 9px;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.ht{padding:14px 16px;font-family:var(--font-mono);font-size:.85rem}
+.ht ul{list-style:none;margin:0;padding:0 0 0 18px;border-left:1px solid var(--line)}
+.ht>ul{padding-left:0;border-left:0}
+.ht li{padding:3px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ht .ty{color:var(--muted);font-size:.78rem}
+.dot{display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--nbase);flex:none}
+.dot.n2d{background:var(--n2d)} .dot.ctl{background:var(--ctl)} .dot.n3d{background:var(--n3d)} .dot.base{background:var(--nbase)}
+.dot.inst{background:transparent;border:2px dashed var(--accent)}
+.idx{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px;padding:0;list-style:none}
+.idx a{display:flex;gap:8px;align-items:baseline;text-decoration:none;color:var(--fg);border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 12px;font-weight:500;font-size:.92rem}
+.idx a b{font-family:var(--font-mono);color:var(--accent);font-size:.78rem}
+.idx a:hover{border-color:var(--accent)}
+
+/* lessons */
+section.lesson{border-top:1px solid var(--line);padding-block:44px 8px;display:flex;flex-direction:column;gap:20px}
+.lesson>header{display:flex;flex-direction:column;gap:8px}
+.lesson h2{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:700;letter-spacing:-.01em}
+.lesson>header p{color:var(--muted);margin:0}
+.steps{margin:0;padding-left:22px;max-width:65ch}
+.steps li{margin-bottom:8px;padding-left:4px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:7px}
+.widget{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+.widget.one{grid-template-columns:minmax(0,1fr)}
+.widget h4{font-size:1.05rem;margin-bottom:8px}
+.widget .info p{margin-bottom:8px}
+.cap{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+
+/* tree */
+.tree{display:flex;flex-direction:column;gap:2px}
+.tn{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;cursor:pointer;padding:7px 10px 7px calc(10px + var(--d,0) * 22px);border-radius:5px;font-family:var(--font-mono);font-size:.85rem;border:1px solid transparent}
+.tn:hover{background:var(--surface-2)}
+.tn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.tn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tn .ty{color:var(--muted);font-size:.76rem;margin-left:auto;padding-left:10px;text-align:right}
+.tn.static{cursor:default}
+.tn.static:hover{background:none}
+
+/* buttons */
+.btn{font:inherit;font-weight:600;font-size:.9rem;cursor:pointer;border-radius:6px;padding:8px 14px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent)}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font:inherit;font-size:.86rem;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:5px 12px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+/* editor tour */
+.svgwrap{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px}
+.svgwrap svg{display:block;width:100%;height:auto}
+.reg{cursor:pointer}
+.reg .bg{fill:var(--surface-2);stroke:var(--line);stroke-width:1.5}
+.reg:hover .bg{stroke:var(--accent)}
+.reg.sel .bg{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.5}
+.reg:focus-visible{outline:none}
+.reg:focus-visible .bg{stroke:var(--accent);stroke-width:3}
+.reg text{fill:var(--muted);font-family:var(--font-mono);font-size:13px;pointer-events:none}
+.reg .ln{fill:var(--line);pointer-events:none}
+.reg .hot{fill:var(--accent);pointer-events:none}
+
+/* tables */
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.tbl{width:100%;border-collapse:collapse;min-width:620px;font-size:.93rem}
+.tbl th{text-align:left;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td:first-child{color:var(--muted);width:19%}
+.tbl td code{white-space:pre-wrap}
+.life{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.life .panel h4{font-family:var(--font-mono);font-size:.92rem;margin-bottom:6px;color:var(--code-f)}
+.life .panel{background:var(--surface)}
+.life .panel h4{color:var(--accent)}
+.life .panel p{font-size:.92rem;margin:0}
+
+/* movement */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:10px}
+#mv-canvas{display:block;width:100%;max-width:100%;height:auto;border-radius:4px;background:var(--surface-2);cursor:pointer;touch-action:none}
+#mv-canvas:focus-visible{outline:2px solid var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.stat{border:1px solid var(--line);border-radius:5px;padding:6px 10px;min-width:0}
+.stat small{display:block;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat b{font-family:var(--font-mono);font-size:.95rem;font-variant-numeric:tabular-nums;font-weight:600}
+.ctrl{display:flex;flex-direction:column;gap:14px}
+.ctrl label{display:flex;flex-direction:column;gap:4px;font-size:.9rem;font-weight:500}
+.ctrl label.inline{flex-direction:row;align-items:center;gap:8px}
+.ctrl input[type=range]{width:100%;accent-color:var(--accent)}
+.ctrl select{font:inherit;padding:6px 8px;border-radius:5px;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+.ctrl input[type=checkbox]{accent-color:var(--accent);width:18px;height:18px}
+.dpad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(2,44px);gap:6px;justify-content:center}
+.dpad button{font:inherit;font-size:1.1rem;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;touch-action:none;user-select:none}
+.dpad button:active{background:var(--accent-soft);border-color:var(--accent)}
+.dpad .u{grid-column:2;grid-row:1}.dpad .l{grid-column:1;grid-row:2}.dpad .d{grid-column:2;grid-row:2}.dpad .r{grid-column:3;grid-row:2}
+.hint{font-size:.85rem;color:var(--muted)}
+
+/* signals */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:10px 14px;transition:background .25s}
+.hud.pulse{background:var(--accent-soft)}
+.hud b{font-family:var(--font-mono);font-size:1.2rem;font-variant-numeric:tabular-nums}
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;min-height:190px}
+.log li{font-family:var(--font-mono);font-size:.8rem;padding:6px 10px;border-radius:4px;border-left:3px solid var(--line);background:var(--surface-2);overflow-wrap:anywhere}
+.log li.emit{border-left-color:var(--accent)}
+.log li.recv{border-left-color:var(--good)}
+.log li.lost{border-left-color:var(--bad)}
+.log li.empty{color:var(--muted);border-left-color:var(--line)}
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--font-mono);font-size:.8rem}
+.flow .node{border:1px solid var(--line);border-radius:5px;padding:6px 10px;background:var(--surface-2)}
+.flow .wire{flex:1;min-width:48px;height:2px;background:var(--accent);position:relative}
+.flow .wire.off{background:repeating-linear-gradient(90deg,var(--bad) 0 6px,transparent 6px 12px)}
+
+/* quiz */
+.quiz{display:flex;flex-direction:column;gap:16px}
+.q h4{font-size:1.05rem;margin-bottom:10px;font-weight:600}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;padding:9px 12px}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.ok{border-color:var(--good);background:var(--surface-2)}
+.opt.no{border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.exp{margin-top:8px;font-size:.92rem;color:var(--muted)}
+.exp b.ok{color:var(--good)} .exp b.no{color:var(--bad)}
+.score{font-family:var(--font-display);font-size:1.2rem;font-weight:700}
+
+.next ul{margin:0 0 12px;padding-left:20px;max-width:65ch}
+.next li{margin-bottom:6px}
+
+@media (max-width:760px){
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .widget{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion: reduce){
+  .hud{transition:none}
+}
+</style>
+<style>
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.hero-s{padding-block:12px 36px;display:flex;flex-direction:column;gap:12px}
+.hero-s h1{font-size:clamp(2.2rem,6vw,3.7rem);font-weight:700;letter-spacing:-.02em}
+.hero-s .lead{font-size:1.1rem;color:var(--muted);max-width:62ch}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.pipe{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.pstep{all:unset;box-sizing:border-box;cursor:pointer;flex:1 1 140px;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.pstep:hover{border-color:var(--accent)}
+.pstep:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pstep b{font-family:var(--font-mono);font-size:.72rem;color:var(--accent);letter-spacing:.08em}
+.pstep span{font-size:.9rem;line-height:1.3}
+.pstep[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.pstep.past{border-color:var(--good)}
+.pnav{display:flex;gap:8px;margin-top:12px}
+.file-tag{display:inline-block;font-family:var(--font-mono);font-size:.74rem;color:var(--muted);margin-bottom:6px}
+.codebox{position:relative}
+.copy{position:absolute;top:8px;right:8px;font:inherit;font-size:.74rem;font-family:var(--font-mono);cursor:pointer;border:1px solid var(--code-dim);background:transparent;color:var(--code-fg);border-radius:4px;padding:3px 8px}
+.copy:hover{border-color:var(--code-fg)}
+.todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;counter-reset:s}
+.todo li{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:14px 16px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px}
+.todo li.done{border-color:var(--good)}
+.todo input{grid-row:1/3;margin-top:4px;width:20px;height:20px;accent-color:var(--accent)}
+.todo h4{font-size:1.05rem;font-weight:600}
+.todo .body{display:flex;flex-direction:column;gap:8px;min-width:0}
+.todo .body p{margin:0;font-size:.95rem}
+.todo .body ul{margin:0;padding-left:20px;font-size:.95rem}
+.todo .body li{display:list-item;border:0;background:none;padding:0;margin-bottom:3px}
+.errlist{display:flex;flex-direction:column;gap:6px}
+.eb{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:6px;padding:9px 12px;font-family:var(--font-mono);font-size:.78rem;line-height:1.4;overflow-wrap:anywhere}
+.eb:hover{border-color:var(--accent)}
+.eb[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.eb.silent{font-family:var(--font-body);font-size:.9rem}
+.errdetail{display:flex;flex-direction:column;gap:12px}
+.errdetail h4{font-size:.72rem;font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:2px}
+.errdetail p{margin:0}
+.errdetail ol{margin:0;padding-left:20px}
+.errdetail ol li{margin-bottom:4px}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<style>
+.gp-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.gp-row .nm{font-family:var(--font-mono);font-size:.88rem;display:flex;align-items:center;gap:8px;min-width:0}
+.gp-row .tag{font-family:var(--font-mono);font-size:.72rem;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted)}
+.gp-row .tag.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.gp-row .chip{font-size:.8rem;padding:4px 10px}
+.gp-list{display:flex;flex-direction:column;gap:6px}
+.sp-stage{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:10px}
+#sp-canvas{display:block;width:100%;max-width:100%;height:auto;border-radius:4px;background:var(--surface-2);cursor:pointer;touch-action:none}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent)}
+</style>
+
+<div class="wrap">
+
+  <div class="hero-s">
+    <span class="eyebrow">Aula 7 · continuação do mini-projeto</span>
+    <h1>Várias moedas</h1>
+    <p class="lead">Com uma moeda, um <code>@onready</code> resolve. Com dez, não. Esta aula mostra como ligar todas de uma vez com grupos e um loop, e como gerar moedas novas por código com um <code>Timer</code>, que é a base de qualquer jogo de coletar coisas.</p>
+    <nav aria-label="Seções"><ol class="idx" style="margin-top:8px">
+      <li><a href="#grupos"><b>1</b>Grupos e loop</a></li>
+      <li><a href="#spawn"><b>2</b>Gerar por código</a></li>
+      <li><a href="#passos"><b>3</b>No editor</a></li>
+      <li><a href="#erros"><b>4</b>Deu erro?</a></li>
+      <li><a href="#depois"><b>→</b>Depois</a></li>
+    </ol></nav>
+  </div>
+
+  <!-- 1 -->
+  <section class="lesson" id="grupos">
+    <header>
+      <span class="eyebrow">Parte 1</span>
+      <h2>Grupos e loop: ligar todas de uma vez</h2>
+      <p>Um <b>grupo</b> é uma etiqueta que você coloca em vários nós. Depois, <code>get_tree().get_nodes_in_group("moedas")</code> devolve todos eles em uma lista, e um <code>for</code>, igual ao do Python, passa por cada um. Experimente: tire uma moeda do grupo, rode o <code>_ready()</code> e tente coletar.</p>
+    </header>
+    <div class="two">
+      <div class="panel" style="display:flex;flex-direction:column;gap:14px">
+        <p class="cap">Cena Level: moedas</p>
+        <div class="gp-list" id="gp-list"></div>
+        <div class="row">
+          <button class="btn" type="button" id="gp-run">Rodar _ready()</button>
+          <button class="btn ghost" type="button" id="gp-reset">Reiniciar</button>
+        </div>
+        <div class="hud" id="gp-hud"><span>Pontos</span><b id="gp-pts">0</b></div>
+        <ul class="log" id="gp-log" aria-live="polite" style="min-height:120px"></ul>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+        <p class="cap">moeda.gd</p>
+        <pre data-gd>extends Area2D
+
+signal coletada(valor)
+
+func _ready():
+	add_to_group("moedas")</pre>
+        <p class="cap">level.gd</p>
+        <pre data-gd>func _ready():
+	for moeda in get_tree().get_nodes_in_group("moedas"):
+		moeda.coletada.connect(_on_moeda_coletada)</pre>
+        <p class="small">Em vez do <code>add_to_group</code> no script, você pode marcar o grupo no editor: selecione o nó, aba <b>Nó</b>, seção <b>Grupos</b>. Em uma cena que é instanciada, vale a pena fazer isso na cena Moeda, para toda cópia já nascer no grupo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="lesson" id="spawn">
+    <header>
+      <span class="eyebrow">Parte 2</span>
+      <h2>Gerar moedas por código com um Timer</h2>
+      <p>Em vez de colocar as moedas à mão no editor, o Level cria uma nova a cada intervalo. O <code>Timer</code> é um nó que emite o sinal <code>timeout</code> de tempos em tempos, o mesmo mecanismo da aula de sinais. A cada <code>timeout</code>, o Level instancia a cena Moeda numa posição aleatória e liga o <code>coletada</code> dela.</p>
+    </header>
+    <div class="two">
+      <div class="sp-stage">
+        <canvas id="sp-canvas" width="480" height="270" tabindex="0" aria-label="Simulação de moedas aparecendo. Clique e use as setas ou WASD."></canvas>
+        <div class="bar" aria-hidden="true"><i id="sp-bar"></i></div>
+        <div class="stats">
+          <div class="stat"><small>Pontos</small><b id="sp-score">0</b></div>
+          <div class="stat"><small>Moedas na tela</small><b id="sp-count">0</b></div>
+          <div class="stat"><small>Próxima em</small><b id="sp-next">—</b></div>
+        </div>
+        <p class="hint" id="sp-hint">O piloto automático está coletando. Clique na área e use as setas ou WASD para assumir.</p>
+        <div class="dpad" aria-label="Controles na tela">
+          <button type="button" class="u" data-k="up" aria-label="Cima">▲</button>
+          <button type="button" class="l" data-k="left" aria-label="Esquerda">◀</button>
+          <button type="button" class="d" data-k="down" aria-label="Baixo">▼</button>
+          <button type="button" class="r" data-k="right" aria-label="Direita">▶</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+        <div class="panel ctrl">
+          <label for="sp-int"><span>Intervalo do Timer: <b id="sp-int-v">1.5</b> s</span>
+            <input id="sp-int" type="range" min="0.5" max="3" step="0.1" value="1.5"></label>
+          <label for="sp-max"><span>Máximo de moedas na tela: <b id="sp-max-v">6</b></span>
+            <input id="sp-max" type="range" min="1" max="12" step="1" value="6"></label>
+        </div>
+        <p class="cap">Timer (no Inspetor)</p>
+        <pre id="sp-timer"></pre>
+        <p class="cap">level.gd</p>
+        <pre id="sp-code"></pre>
+        <p class="small">Esta tela é uma simulação: ela mostra o que acontece, mas a colisão aqui é uma conta de distância. No jogo de verdade quem avisa é o <code>body_entered</code> da <code>Area2D</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="lesson" id="passos">
+    <header>
+      <span class="eyebrow">Parte 3</span>
+      <h2>Fazendo no seu projeto</h2>
+      <p>Parte do que você já tem continua valendo. Marque cada passo quando terminar.</p>
+    </header>
+    <ol class="todo" id="todo">
+      <li>
+        <input type="checkbox" id="c1" aria-labelledby="h1s">
+        <h4 id="h1s">Coloque a Moeda em um grupo</h4>
+        <div class="body">
+          <p>Abra <code>moeda.tscn</code>, selecione a raiz, aba <b>Nó</b>, seção <b>Grupos</b>, digite <code>moedas</code> e clique em <b>Adicionar</b>. Ou, se preferir, use <code>add_to_group("moedas")</code> no <code>_ready()</code> do <code>moeda.gd</code>. Um jeito só, não os dois.</p>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" id="c2" aria-labelledby="h2s">
+        <h4 id="h2s">Tire a Moeda fixa da cena Level</h4>
+        <div class="body">
+          <p>Apague a instância <b>Moeda</b> que você tinha colocado à mão. Agora elas virão do código. Apague também a variável <code>@onready var moeda</code> e a linha <code>moeda.coletada.connect(...)</code> do <code>_ready()</code>, senão o script aponta para um nó que não existe mais.</p>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" id="c3" aria-labelledby="h3s">
+        <h4 id="h3s">Adicione um Timer ao Level</h4>
+        <div class="body">
+          <ul>
+            <li>Adicione um nó <code>Timer</code> filho do Level.</li>
+            <li>No Inspetor: <b>Wait Time</b> = <code>1.5</code> e <b>Autostart</b> ligado.</li>
+            <li>Na aba <b>Nó</b>, dê dois cliques em <code>timeout()</code> e conecte ao <b>Level</b>. A Godot cria a função <code>_on_timer_timeout()</code> no <code>level.gd</code>.</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" id="c4" aria-labelledby="h4s">
+        <h4 id="h4s">Escreva o level.gd</h4>
+        <div class="body">
+          <p>Substitua o conteúdo pelo código abaixo. A função <code>_on_timer_timeout</code> é a que a Godot criou no passo anterior; só preencha o corpo dela.</p>
+          <div class="codebox"><button class="copy" type="button" data-for="code-final">Copiar</button>
+<pre id="code-final" data-gd>extends Node2D
+
+var pontos := 0
+var moeda_cena := preload("res://moeda.tscn")
+
+@onready var label = $HUD/Pontos
+
+func _on_timer_timeout():
+	if get_tree().get_nodes_in_group("moedas").size() >= 6:
+		return
+	var tela := get_viewport_rect().size
+	var moeda = moeda_cena.instantiate()
+	moeda.position = Vector2(randf_range(40, tela.x - 40), randf_range(40, tela.y - 40))
+	moeda.coletada.connect(_on_moeda_coletada)
+	add_child(moeda)
+
+func _on_moeda_coletada(valor):
+	pontos += valor
+	label.text = "Pontos: %d" % pontos</pre></div>
+          <p class="small">O <code>moeda.coletada.connect(...)</code> acontece <b>antes</b> do <code>add_child</code>, para a moeda já nascer ligada. O limite de 6 conta quantas moedas existem no grupo.</p>
+        </div>
+      </li>
+      <li>
+        <input type="checkbox" id="c5" aria-labelledby="h5s">
+        <h4 id="h5s">Teste com F6</h4>
+        <div class="body">
+          <p>Uma moeda nova deve aparecer a cada 1,5 segundo, até 6 ao mesmo tempo. Ao coletar uma, o placar sobe e uma nova pode surgir no lugar.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- 4 -->
+  <section class="lesson" id="erros">
+    <header>
+      <span class="eyebrow">Parte 4</span>
+      <h2>Deu erro? Escolha o sintoma</h2>
+      <p>Se a sua mensagem não estiver aqui, copie o texto exato do painel Saída ou Depurador e me mande.</p>
+    </header>
+    <div class="two">
+      <div class="errlist" id="errlist"></div>
+      <div class="panel errdetail" id="errdetail" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- depois -->
+  <section class="lesson next" id="depois">
+    <header>
+      <span class="eyebrow">Para praticar</span>
+      <h2>Desafios e próximos temas</h2>
+    </header>
+    <ul>
+      <li>Faça o valor da moeda aleatório entre 1 e 3, e mande esse número no <code>coletada.emit(...)</code>.</li>
+      <li>Adicione um segundo <code>Timer</code> de 30 segundos. No <code>timeout</code> dele, pare o primeiro com <code>$Timer.stop()</code> e mostre uma mensagem de fim de jogo.</li>
+      <li>Crie uma cena Inimigo que também é gerada por código, e quando o Player encostar nele, recarregue a fase com <code>get_tree().reload_current_scene()</code>.</li>
+    </ul>
+    <p>Quando fizer algum desses, ou quiser outro assunto, me diga e eu monto a próxima aula. Os temas que sobraram: animação com <code>AnimatedSprite2D</code>, interface com <code>Control</code> (menu inicial e tela de fim de jogo), mapas com <code>TileMapLayer</code>, som, salvar dados e exportar o jogo.</p>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s)};
+  var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  var KW=/^(extends|func|var|const|signal|if|elif|else|for|while|in|return|pass|class_name|class|match|and|or|not|true|false|null|self|await|static|enum|as|is)$/;
+  function hl(src){
+    var re=/(#.*)|("(?:[^"\\]|\\.)*")|(@\w+)|(\$[\w\/]+)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_]\w*)(\s*\()?/g;
+    var out='',last=0,m;
+    while((m=re.exec(src))){
+      out+=esc(src.slice(last,m.index));
+      if(m[1]) out+='<span class="c">'+esc(m[1])+'</span>';
+      else if(m[2]) out+='<span class="s">'+esc(m[2])+'</span>';
+      else if(m[3]) out+='<span class="k">'+esc(m[3])+'</span>';
+      else if(m[4]) out+='<span class="t">'+esc(m[4])+'</span>';
+      else if(m[5]) out+='<span class="n">'+esc(m[5])+'</span>';
+      else {
+        var w=m[6], call=m[7]||'';
+        if(KW.test(w)) out+='<span class="k">'+w+'</span>'+esc(call);
+        else if(/^[A-Z]/.test(w)) out+='<span class="t">'+w+'</span>'+esc(call);
+        else if(call) out+='<span class="f">'+w+'</span>'+esc(call);
+        else out+=w;
+      }
+      last=re.lastIndex;
+    }
+    return out+esc(src.slice(last));
+  }
+  $$('[data-gd]').forEach(function(el){el.innerHTML=hl(el.textContent)});
+  function setCode(el,src){el.innerHTML='<code>'+hl(src)+'</code>'}
+
+  $$('.copy').forEach(function(b){
+    b.addEventListener('click',function(){
+      var el=document.getElementById(b.getAttribute('data-for')), txt=el.textContent;
+      function flash(t){b.textContent=t; setTimeout(function(){b.textContent='Copiar'},1400)}
+      function fallback(){
+        var r=document.createRange(); r.selectNodeContents(el);
+        var s=window.getSelection(); s.removeAllRanges(); s.addRange(r); flash('Selecionado');
+      }
+      try{ navigator.clipboard.writeText(txt).then(function(){flash('Copiado')},fallback); }catch(e){fallback()}
+    });
+  });
+  $$('#todo input').forEach(function(c){
+    c.addEventListener('change',function(){c.closest('li').classList.toggle('done',c.checked)});
+  });
+
+  /* ---------- parte 1: grupos ---------- */
+  var coins=[], ran=false, gpts=0, glogs=[];
+  function mkCoins(){coins=[{n:'Moeda',g:true,c:false},{n:'Moeda2',g:true,c:false},{n:'Moeda3',g:false,c:false},{n:'Moeda4',g:true,c:false}]; ran=false; gpts=0; glogs=[]}
+  mkCoins();
+  var gl=$('#gp-list'), glog=$('#gp-log'), gpts_el=$('#gp-pts'), ghud=$('#gp-hud');
+  function glogPush(c,m){glogs.push({c:c,m:m}); if(glogs.length>7) glogs.shift()}
+  function gRender(){
+    gl.innerHTML='';
+    coins.forEach(function(co,i){
+      var r=document.createElement('div'); r.className='gp-row';
+      r.innerHTML='<span class="nm"><i class="dot inst"></i>'+co.n+'</span><span class="tag'+(co.g?' on':'')+'">'+(co.g?'grupo: moedas':'sem grupo')+'</span>';
+      var box=document.createElement('span'); box.style.display='flex'; box.style.gap='6px';
+      var t=document.createElement('button'); t.type='button'; t.className='chip'; t.textContent=co.g?'Tirar do grupo':'Pôr no grupo'; t.disabled=ran;
+      t.addEventListener('click',function(){co.g=!co.g; gRender()});
+      var k=document.createElement('button'); k.type='button'; k.className='chip'; k.textContent='Coletar'; k.disabled=!ran;
+      k.addEventListener('click',function(){
+        glogPush('emit',co.n+': coletada.emit(1)');
+        if(co.c){gpts++; glogPush('recv','Level: _on_moeda_coletada(1), pontos = '+gpts); ghud.classList.add('pulse'); setTimeout(function(){ghud.classList.remove('pulse')},300)}
+        else glogPush('lost','Ninguém ouviu: a '+co.n+' não foi ligada ao Level.');
+        gRender();
+      });
+      box.appendChild(t); box.appendChild(k); r.appendChild(box);
+      gl.appendChild(r);
+    });
+    gpts_el.textContent=gpts;
+    $('#gp-run').disabled=ran;
+    glog.innerHTML=glogs.length?glogs.map(function(l){return '<li class="'+l.c+'">'+esc(l.m)+'</li>'}).join(''):'<li class="empty">Escolha quais moedas ficam no grupo e clique em "Rodar _ready()".</li>';
+  }
+  $('#gp-run').addEventListener('click',function(){
+    ran=true; glogs=[];
+    coins.forEach(function(co){
+      if(co.g){co.c=true; glogPush('recv','for: '+co.n+'.coletada.connect(_on_moeda_coletada)')}
+      else glogPush('lost','for: '+co.n+' não está no grupo, foi ignorada')
+    });
+    gRender();
+  });
+  $('#gp-reset').addEventListener('click',function(){var g=coins.map(function(c){return c.g}); mkCoins(); coins.forEach(function(c,i){c.g=g[i]}); gRender()});
+  gRender();
+
+  /* ---------- parte 2: spawn ---------- */
+  var cv=$('#sp-canvas'), cx=cv.getContext('2d'), W=cv.width, H=cv.height, PS=22, SPD=170;
+  var pl={x:W/2,y:H/2}, sc=[{x:340,y:70},{x:120,y:190}], score=0, tAcc=0, interval=1.5, maxC=6, userCtl=false, lastT=null;
+  var keys={left:0,right:0,up:0,down:0}, pad={left:0,right:0,up:0,down:0};
+  var KEYMAP={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down'};
+  function take(){ if(!userCtl){userCtl=true; $('#sp-hint').textContent='Você está no controle. Colete as moedas com as setas ou WASD.'} }
+  cv.addEventListener('keydown',function(e){var k=KEYMAP[e.code]; if(k){e.preventDefault(); keys[k]=1; take()}});
+  cv.addEventListener('keyup',function(e){var k=KEYMAP[e.code]; if(k){e.preventDefault(); keys[k]=0}});
+  cv.addEventListener('blur',function(){keys={left:0,right:0,up:0,down:0}});
+  cv.addEventListener('pointerdown',function(){cv.focus()});
+  $$('.dpad button').forEach(function(b){
+    var k=b.getAttribute('data-k');
+    b.addEventListener('pointerdown',function(e){e.preventDefault(); pad[k]=1; take()});
+    ['pointerup','pointerleave','pointercancel'].forEach(function(ev){b.addEventListener(ev,function(){pad[k]=0})});
+  });
+  function dirNow(){
+    var x,y;
+    if(userCtl){
+      x=(keys.right||pad.right?1:0)-(keys.left||pad.left?1:0); y=(keys.down||pad.down?1:0)-(keys.up||pad.up?1:0);
+    } else {
+      var best=null,bd=1e9; sc.forEach(function(c){var d=Math.hypot(c.x-pl.x,c.y-pl.y); if(d<bd){bd=d;best=c}});
+      if(!best||bd<3) return {x:0,y:0};
+      x=(best.x-pl.x)/bd; y=(best.y-pl.y)/bd;
+    }
+    var l=Math.sqrt(x*x+y*y); if(l>1){x/=l;y/=l} return {x:x,y:y};
+  }
+  function spawn(){ if(sc.length>=maxC) return; sc.push({x:20+Math.random()*(W-40),y:20+Math.random()*(H-40)}) }
+  function tok(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+  function tick(dt){
+    tAcc+=dt; if(tAcc>=interval){tAcc=0; spawn()}
+    var d=dirNow();
+    pl.x=Math.max(PS/2,Math.min(W-PS/2,pl.x+d.x*SPD*dt)); pl.y=Math.max(PS/2,Math.min(H-PS/2,pl.y+d.y*SPD*dt));
+    sc=sc.filter(function(c){ if(Math.hypot(c.x-pl.x,c.y-pl.y)<19){score++; return false} return true });
+  }
+  function draw(){
+    cx.fillStyle=tok('--surface-2'); cx.fillRect(0,0,W,H);
+    cx.strokeStyle=tok('--line'); cx.lineWidth=1; cx.beginPath();
+    for(var gx=30;gx<W;gx+=30){cx.moveTo(gx+.5,0);cx.lineTo(gx+.5,H)}
+    for(var gy=30;gy<H;gy+=30){cx.moveTo(0,gy+.5);cx.lineTo(W,gy+.5)}
+    cx.stroke();
+    cx.fillStyle=tok('--coin');
+    sc.forEach(function(c){cx.beginPath(); cx.arc(c.x,c.y,8,0,Math.PI*2); cx.fill()});
+    cx.fillStyle=tok('--n2d'); cx.fillRect(pl.x-PS/2,pl.y-PS/2,PS,PS);
+  }
+  var elScore=$('#sp-score'), elCount=$('#sp-count'), elNext=$('#sp-next'), elBar=$('#sp-bar');
+  function frame(t){
+    if(lastT===null) lastT=t;
+    var dt=Math.min((t-lastT)/1000,0.1); lastT=t;
+    tick(dt); draw();
+    elScore.textContent=score; elCount.textContent=sc.length;
+    elNext.textContent=sc.length>=maxC?'cheio':Math.max(0,interval-tAcc).toFixed(1)+' s';
+    elBar.style.width=Math.min(100,tAcc/interval*100)+'%';
+    requestAnimationFrame(frame);
+  }
+  function spCode(){
+    setCode($('#sp-timer'),'Wait Time: '+interval.toFixed(1)+'\nAutostart: ligado');
+    setCode($('#sp-code'),'func _on_timer_timeout():\n\tif get_tree().get_nodes_in_group("moedas").size() >= '+maxC+':\n\t\treturn\n\tvar moeda = moeda_cena.instantiate()\n\tmoeda.position = Vector2(randf_range(40, 1100), randf_range(40, 600))\n\tmoeda.coletada.connect(_on_moeda_coletada)\n\tadd_child(moeda)');
+  }
+  $('#sp-int').addEventListener('input',function(e){interval=+e.target.value; $('#sp-int-v').textContent=interval.toFixed(1); spCode()});
+  $('#sp-max').addEventListener('input',function(e){maxC=+e.target.value; $('#sp-max-v').textContent=maxC; spCode()});
+  spCode(); requestAnimationFrame(frame);
+
+  /* ---------- parte 4: erros ---------- */
+  var ERR=[
+    {m:'Preload file "res://moedas.tscn" does not exist.',
+     why:'O caminho dentro do <code>preload</code> está errado, ou o arquivo foi renomeado ou movido. Como o <code>preload</code> é resolvido quando o script é carregado, o erro já aparece no editor, antes de rodar.',
+     fix:['No painel de arquivos, clique com o botão direito na cena <code>moeda.tscn</code> e escolha <b>Copiar caminho</b>.','Cole o caminho dentro do <code>preload</code>, com as aspas.'],
+     code:'var moeda_cena := preload("res://moeda.tscn")'},
+    {m:'Invalid call. Nonexistent function \'instantiate\' in base \'Nil\'.',
+     why:'A variável que guarda a cena está vazia. Isso acontece quando você declara <code>@export var moeda_cena: PackedScene</code> e esquece de arrastar o <code>moeda.tscn</code> para o campo no Inspetor, ou quando declara a variável sem valor.',
+     fix:['Se usar <code>@export</code>, selecione o Level e arraste <code>moeda.tscn</code> para o campo no Inspetor.','Ou use <code>preload</code>, que não depende do Inspetor.'],
+     code:'var moeda_cena := preload("res://moeda.tscn")   # já vem preenchida'},
+    {m:'Nenhuma moeda aparece e não há erro.',silent:true,
+     why:'O <code>Timer</code> não está disparando, ou o sinal <code>timeout</code> não está ligado ao Level.',
+     fix:['No Timer, confira se <b>Autostart</b> está ligado.','Na aba <b>Nó</b> do Timer, o <code>timeout()</code> precisa ter o ícone verde, apontando para o Level.','Abra o <code>level.gd</code>: a função <code>_on_timer_timeout</code> existe e não está vazia?','Coloque um <code>print</code> no começo da função para confirmar que ela roda.'],
+     code:'func _on_timer_timeout():\n\tprint("timer disparou")   # aparece na Saída a cada 1,5 s'},
+    {m:'Todas as moedas aparecem no canto superior esquerdo.',silent:true,
+     why:'A posição não foi definida, e o padrão de um nó novo é <code>(0, 0)</code>.',
+     fix:['Defina <code>position</code> da moeda antes ou logo depois do <code>add_child</code>.','Confira se o nome da variável na linha da posição é o mesmo que você instanciou.'],
+     code:'var moeda = moeda_cena.instantiate()\nmoeda.position = Vector2(randf_range(40, 1100), randf_range(40, 600))\nadd_child(moeda)'},
+    {m:'Parent node is busy setting up children, `add_child()` failed. Consider using `add_child.call_deferred(child)` instead.',
+     why:'Você chamou <code>add_child</code> em um nó que ainda está montando os próprios filhos. Acontece, por exemplo, quando a própria moeda tenta adicionar algo ao pai dentro do <code>_ready()</code> dela.',
+     fix:['Adie a chamada com <code>call_deferred</code>, que executa logo depois.'],
+     code:'add_child.call_deferred(moeda)'},
+    {m:'As moedas não param de aparecer e enchem a tela.',silent:true,
+     why:'Nada está limitando o número delas. O Timer cria uma nova a cada intervalo, mesmo que você não colete nenhuma.',
+     fix:['A moeda precisa estar no grupo <code>moedas</code> (passo 1).','No começo de <code>_on_timer_timeout</code>, conte o grupo e saia da função se já chegou no máximo.'],
+     code:'if get_tree().get_nodes_in_group("moedas").size() >= 6:\n\treturn'}
+  ];
+  var errlist=$('#errlist'), errdetail=$('#errdetail');
+  ERR.forEach(function(e,i){
+    var b=document.createElement('button'); b.type='button'; b.className='eb'+(e.silent?' silent':'');
+    b.textContent=e.m; b.addEventListener('click',function(){selErr(i)}); errlist.appendChild(b); e.el=b;
+  });
+  function selErr(i){
+    var e=ERR[i];
+    ERR.forEach(function(o,j){o.el.setAttribute('aria-pressed',String(j===i))});
+    var h='<div><h4>O que significa</h4><p>'+e.why+'</p></div>';
+    h+='<div><h4>Como corrigir</h4>'+(e.fix.length>1?'<ol>'+e.fix.map(function(f){return '<li>'+f+'</li>'}).join('')+'</ol>':'<p>'+e.fix[0]+'</p>')+'</div>';
+    if(e.code) h+='<div><h4>Exemplo</h4><pre id="err-code"></pre></div>';
+    errdetail.innerHTML=h;
+    if(e.code) setCode($('#err-code'),e.code);
+  }
+  selErr(0);
+})();
+</script>
+
+</body></html>
