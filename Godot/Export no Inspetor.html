@@ -1,0 +1,426 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Export no Inspetor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Modelo de aulas de Godot. Fonte de verdade do estilo das aulas novas (as antigas não usam este arquivo).
+   Regras fixas: texto >= 14px, alvos de toque >= 44px, nada de white-space:nowrap em texto corrido,
+   estado nunca só por cor (sempre texto, borda ou ícone junto). */
+:root{
+  --bg:#f1f4f8; --surface:#ffffff; --surface-2:#e7ecf3; --fg:#141d28; --muted:#526173; --line:#d0d8e3;
+  --accent:#2a68a3; --accent-soft:#dbe8f5; --on-accent:#ffffff; --good:#1d7f37; --bad:#c13a3e;
+  --n2d:#3556c8; --ctl:#1d7f37; --n3d:#c13a3e; --nbase:#6a7a8c; --coin:#b57d00;
+  --code-bg:#161c24; --code-fg:#d9e2ec; --code-dim:#8a9bb0;
+  --code-k:#ff8a9b; --code-f:#57b3ff; --code-s:#ffeb8a; --code-n:#c9a0ff; --code-t:#8eef97;
+  --hl:rgba(87,179,255,.2);
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Figtree','Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --nav-h:52px; --alvo:44px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151b; --surface:#1a212a; --surface-2:#232c37; --fg:#e5ecf3; --muted:#a3b1c1; --line:#2d3947;
+    --accent:#6aa6d6; --accent-soft:#1f3347; --on-accent:#0c1722; --good:#8eef97; --bad:#fc7f7f;
+    --n2d:#8da5f3; --ctl:#8eef97; --n3d:#fc7f7f; --nbase:#97a6b7; --coin:#f2c14e; --code-bg:#0d1116;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151b; --surface:#1a212a; --surface-2:#232c37; --fg:#e5ecf3; --muted:#a3b1c1; --line:#2d3947;
+  --accent:#6aa6d6; --accent-soft:#1f3347; --on-accent:#0c1722; --good:#8eef97; --bad:#fc7f7f;
+  --n2d:#8da5f3; --ctl:#8eef97; --n3d:#fc7f7f; --nbase:#97a6b7; --coin:#f2c14e; --code-bg:#0d1116;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--font-body);margin:0;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 72px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:860px;margin:0 auto}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--font-display);line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.2rem,7vw,3.8rem);letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,4.5vw,2rem)} h3{font-size:1.15rem}
+p,li{max-width:68ch} p{margin:0 0 12px}
+a{color:var(--accent)}
+.small{font-size:.9rem;color:var(--muted)}
+.lead{font-size:1.1rem;color:var(--muted)}
+/* código em linha: quebra de linha permitida (corrige o estouro de largura das aulas antigas) */
+code{font-family:var(--font-mono);font-size:max(.875em,.875rem);background:var(--code-bg);color:var(--code-fg);
+  padding:2px 6px;border-radius:4px;overflow-wrap:anywhere}
+/* cabeçalho */
+.hero{padding:32px 0 20px;display:flex;flex-direction:column;gap:12px}
+.ao-final{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px;padding:12px 16px}
+.ao-final p{margin:0}
+/* índice fixo */
+nav.idx{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line);
+  margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:0 max(16px,env(safe-area-inset-left,0px))}
+nav.idx ol{list-style:none;margin:0 auto;padding:4px 0;display:flex;gap:6px;overflow-x:auto;max-width:860px;scrollbar-width:thin}
+nav.idx a{display:flex;align-items:center;min-height:var(--alvo);padding:0 14px;border:1px solid var(--line);
+  border-radius:6px;background:var(--surface);color:var(--fg);text-decoration:none;font-weight:500;white-space:nowrap}
+nav.idx a[aria-current="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 -3px 0 var(--accent)}
+section.parte{border-top:1px solid var(--line);padding:36px 0 8px;display:flex;flex-direction:column;gap:16px;scroll-margin-top:calc(var(--nav-h) + 8px)}
+.rotulo{font-family:var(--font-mono);font-size:.875rem;color:var(--accent);font-weight:600}
+/* botões e controles */
+.btn,.opcoes button{min-height:var(--alvo);min-width:var(--alvo);padding:0 16px;font:inherit;font-weight:500;color:var(--fg);
+  background:var(--surface);border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.btn.primario{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn:hover,.opcoes button:hover{border-color:var(--accent)}
+.controles{display:flex;flex-wrap:wrap;gap:8px}
+.painel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+/* simulador */
+.sim{display:flex;flex-direction:column;gap:12px}
+.sim canvas{display:block;width:100%;height:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;touch-action:pan-y}
+.sim canvas.arrasta{touch-action:none} /* só se o simulador usa arrastar na horizontal */
+.estado{font-family:var(--font-mono);font-size:.9rem;display:flex;flex-wrap:wrap;gap:6px 16px;margin:0}
+/* bloco de código */
+figure.codebox{margin:0;border-radius:6px;overflow:hidden;background:var(--code-bg)}
+figure.codebox figcaption{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 8px 0 16px;
+  min-height:var(--alvo);font-family:var(--font-mono);font-size:.875rem;color:var(--code-dim);border-bottom:1px solid #ffffff22}
+figure.codebox .copiar{min-height:var(--alvo);min-width:var(--alvo);padding:0 12px;font:inherit;font-size:.875rem;color:var(--code-fg);
+  background:transparent;border:1px solid #ffffff33;border-radius:6px;cursor:pointer}
+.copiar-status{font-size:.875rem;color:var(--code-t)}
+pre.gd{margin:0;padding:12px 0;overflow-x:auto;font:.875rem/1.6 var(--font-mono);color:var(--code-fg);tab-size:4;white-space:pre}
+pre.gd code{display:block;min-width:max-content;background:none;padding:0;font-size:inherit;overflow-wrap:normal;counter-reset:ln}
+pre.gd[data-sem-destaque] code{padding:0 16px} /* bloco que o JS não dividiu em linhas mantém o recuo */
+.ln{display:block;padding:0 16px;border-left:4px solid transparent}
+.ln::before{counter-increment:ln;content:counter(ln);display:inline-block;width:2.5ch;margin-right:1.5ch;text-align:right;color:var(--code-dim);user-select:none}
+.ln.on{background:var(--hl);border-left-color:var(--code-f)}
+.c{color:var(--code-dim)} .k{color:var(--code-k)} .f{color:var(--code-f)} .s{color:var(--code-s)} .n{color:var(--code-n)} .t{color:var(--code-t)}
+/* tabelas largas: rolagem interna com sombra de dica */
+.scroll{overflow-x:auto;background-color:var(--surface);background-image:
+  linear-gradient(to right,var(--surface) 30%,#0000) left/40px 100% no-repeat local,
+  linear-gradient(to left,var(--surface) 30%,#0000) right/40px 100% no-repeat local,
+  radial-gradient(farthest-side at 0 50%,#0004,#0000) left/14px 100% no-repeat scroll,
+  radial-gradient(farthest-side at 100% 50%,#0004,#0000) right/14px 100% no-repeat scroll;border:1px solid var(--line);border-radius:6px}
+.scroll table{border-collapse:collapse;min-width:100%}
+.scroll th,.scroll td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+/* previsão */
+.previsao{background:var(--accent-soft);border:1px solid var(--accent);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.previsao .pergunta{font-weight:600;margin:0}
+.opcoes{display:flex;flex-direction:column;gap:8px}
+.opcoes button{text-align:left;padding:10px 16px}
+.opcoes button.certa{border:2px solid var(--good)} .opcoes button.errada{border:2px solid var(--bad)}
+.opcoes .marca{font-weight:700;margin-left:8px}
+.opcoes button.certa .marca{color:var(--good)} .opcoes button.errada .marca{color:var(--bad)}
+.resposta{background:var(--surface);border-radius:6px;padding:12px 16px}
+.resposta[hidden]{display:none}
+/* desafios com critério de pronto */
+ul.desafios{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+ul.desafios li{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 16px}
+ul.desafios label{display:flex;gap:12px;align-items:flex-start;min-height:var(--alvo);align-items:center;font-weight:600;cursor:pointer}
+ul.desafios input{width:24px;height:24px;flex:none;accent-color:var(--accent)}
+ul.desafios .pronto{margin:6px 0 0 36px;font-size:.9rem;color:var(--muted)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:0 16px}
+details summary{min-height:var(--alvo);display:flex;align-items:center;cursor:pointer;font-weight:600}
+details>*:not(summary){margin-bottom:12px}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+/* controles de ajuste (sliders) e botões alternáveis */
+.ajuste{display:grid;grid-template-columns:7.5rem 1fr 3.5rem;gap:12px;align-items:center;min-height:var(--alvo)}
+.ajuste input[type=range]{width:100%;min-height:var(--alvo);accent-color:var(--accent);margin:0}
+.ajuste output{font-family:var(--font-mono);text-align:right}
+.btn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 -3px 0 var(--accent)}
+@media (max-width:420px){.ajuste{grid-template-columns:5.5rem 1fr 3rem;gap:8px}}
+
+/* faixa sob a barra do sistema no celular (inset é 0 em navegadores comuns) */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:11}
+</style>
+
+
+<header class="wrap hero">
+  <p class="rotulo">Aula 15 · Godot 4.7.2</p>
+  <h1>@export: o mesmo inimigo, vários jeitos</h1>
+  <p class="lead">Hoje a velocidade do inimigo é um número dentro do script. Para ter um inimigo lento e outro rápido, você precisaria de dois scripts. Esta aula mostra como deixar esse número na cena.</p>
+  <div class="ao-final"><p><b>Ao final você consegue:</b> criar inimigos com velocidades diferentes usando um só script, escolhendo o valor no Inspetor ou ao instanciar pelo código.</p></div>
+</header>
+<nav class="idx" aria-label="Partes da aula"><ol class="wrap">
+  <li><a href="#conceito">O conceito</a></li><li><a href="#quando">Quando usar</a></li><li><a href="#ao-vivo">Ao vivo</a></li>
+  <li><a href="#codigo">O código</a></li><li><a href="#exercicio">Exercício</a></li><li><a href="#erros">Deu erro?</a></li>
+  <li><a href="#desafios">Desafios</a></li><li><a href="#checagem">Checagem</a></li>
+</ol></nav>
+<main class="wrap">
+
+<section class="parte" id="conceito"><h2>O conceito: o número mora na cena, não no script</h2>
+  <p>Um script descreve <b>como</b> o inimigo se comporta. Mas a velocidade, a vida e o raio de visão são <b>ajustes</b>: o mesmo comportamento com números diferentes. Se esses números ficam escritos no script, cada variação pede editar o código, e mudar um muda todos os inimigos.</p>
+  <p>A anotação <code>@export</code> marca uma variável como ajustável. Segundo a documentação, o valor exportado é salvo junto com a cena e aparece no Inspetor. O script diz <i>o que pode ser ajustado</i>, e cada instância na cena guarda <i>o valor dela</i>.</p>
+  <p>Você já instanciou cenas (o inimigo que nasce a cada 10 s). Agora cada instância pode nascer com um valor próprio.</p></section>
+
+<section class="parte" id="quando"><h2>Quando usar, e quando não</h2>
+  <p><b>Use</b> para valores que você quer regular olhando o jogo: velocidade, vida, raio de visão, tempo de atordoamento. É o que o seu futuro "inimigo que acelera" precisa como ponto de partida.</p>
+  <p><b>Não use</b> para o que o jogo calcula enquanto roda, como o estado atual do inimigo ou um contador interno. Isso continua sendo um <code>var</code> comum: no Inspetor ele só convidaria você a mudar algo que o código controla.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Forma</th><th>Onde fica o valor</th><th>Aparece no Inspetor?</th><th>Bom para</th></tr></thead>
+    <tbody>
+      <tr><td><code>const X = 100.0</code></td><td>No script, igual para todos</td><td>Não</td><td>Valores que nunca mudam</td></tr>
+      <tr><td><code>@export var x</code></td><td>Em cada instância da cena</td><td>Sim</td><td>Ajustes de cada inimigo</td></tr>
+      <tr><td><code>var x</code></td><td>Na memória, durante o jogo</td><td>Não</td><td>Estado que o código controla</td></tr>
+    </tbody></table></div></section>
+
+<section class="parte" id="ao-vivo"><h2>Ao vivo: corrida de três inimigos</h2>
+  <p>A linha de chegada fica a 420 px. Escolha o modo e as velocidades (em px por segundo), depois clique em <b>Correr</b>. Repare no que acontece com os outros sliders no modo <code>const</code>.</p>
+  <div class="painel sim">
+    <div class="controles" role="group" aria-label="Onde fica o valor">
+      <button class="btn" type="button" id="m-const" data-modo="const" data-hl="cod-modo:2" aria-pressed="false">Valor no script (const)</button>
+      <button class="btn" type="button" id="m-export" data-modo="export" data-hl="cod-modo:4" aria-pressed="true">Valor em cada instância (@export)</button>
+    </div>
+    <div class="ajuste"><label for="v1">Inimigo 1</label><input type="range" id="v1" min="50" max="300" step="10" value="100"><output id="o1" for="v1">100</output></div>
+    <div class="ajuste"><label for="v2">Inimigo 2</label><input type="range" id="v2" min="50" max="300" step="10" value="160"><output id="o2" for="v2">160</output></div>
+    <div class="ajuste"><label for="v3">Inimigo 3</label><input type="range" id="v3" min="50" max="300" step="10" value="220"><output id="o3" for="v3">220</output></div>
+    <canvas id="corrida" width="480" height="270" aria-label="Corrida de três inimigos até a linha de chegada"></canvas>
+    <div class="controles"><button class="btn primario" type="button" id="b-correr">Correr</button><button class="btn" type="button" id="b-voltar">Voltar ao início</button></div>
+    <p class="estado" id="resultado" role="status">Pronto. Ajuste as velocidades e clique em Correr.</p>
+  </div>
+  <figure class="codebox"><figcaption>As duas formas</figcaption><pre class="gd" id="cod-modo"><code><span class="c"># A) valor dentro do script: igual para todas as instâncias</span>
+<span class="k">const</span> VELOCIDADE = <span class="n">100.0</span>
+<span class="c"># B) valor guardado em cada instância da cena</span>
+<span class="k">@export_range</span>(<span class="n">50</span>, <span class="n">300</span>, <span class="n">10</span>) <span class="k">var</span> velocidade: <span class="t">float</span> = <span class="n">100.0</span>
+</code></pre></figure>
+
+  <h3>Em que ordem o valor é definido?</h3>
+  <p>Quando uma cena é instanciada, o valor passa por etapas. Avance passo a passo e veja a variável mudar.</p>
+  <div class="painel sim">
+    <div class="controles"><button class="btn" type="button" id="p-ant">Passo anterior</button><button class="btn primario" type="button" id="p-prox">Próximo passo</button></div>
+    <p class="estado" id="passo" role="status">Passo 0 de 4. Clique em Próximo passo.</p>
+  </div>
+  <figure class="codebox"><figcaption>inimigo.gd (ordem)</figcaption><pre class="gd" id="cod-ordem"><code><span class="k">@export</span> <span class="k">var</span> velocidade: <span class="t">float</span> = <span class="n">100.0</span>
+
+<span class="k">func</span> <span class="f">_init</span>() -&gt; <span class="t">void</span>:
+	velocidade = <span class="n">120.0</span>
+
+<span class="c"># no Inspetor da instância você escreveu: velocidade = 160</span>
+
+<span class="k">func</span> <span class="f">_ready</span>() -&gt; <span class="t">void</span>:
+	<span class="f">print</span>(velocidade)
+</code></pre></figure>
+  <p class="small">Conferido na documentação (Godot 4.3, página "Godot notifications", seção "_init vs. initialization vs. export"): o valor inicial vem primeiro, depois as atribuições do <code>_init()</code>, e depois o valor definido no Inspetor, que substitui os anteriores. O <code>_init()</code> roda antes de <code>_enter_tree()</code> e <code>_ready()</code>.</p></section>
+
+<section class="parte" id="codigo"><h2>O código</h2>
+  <p>Este é o trecho que muda no script do seu inimigo. O resto do seu código de perseguição continua como está; só o número fixo da velocidade vira a variável exportada.</p>
+  <div class="controles">
+    <button class="btn" type="button" data-hl="cod:5">O que vira slider</button>
+    <button class="btn" type="button" data-hl="cod:7">O que vira campo numérico</button>
+    <button class="btn" type="button" data-hl="cod:11">Onde o valor é usado</button></div>
+  <figure class="codebox"><figcaption>inimigo.gd</figcaption><pre class="gd" id="cod"><code><span class="k">extends</span> <span class="t">CharacterBody2D</span>
+
+<span class="c"># Valores que você ajusta no Inspetor, sem abrir o código</span>
+<span class="k">@export_group</span>(<span class="s">"Movimento"</span>)
+<span class="k">@export_range</span>(<span class="n">50</span>, <span class="n">300</span>, <span class="n">10</span>) <span class="k">var</span> velocidade: <span class="t">float</span> = <span class="n">100.0</span>
+<span class="k">@export_group</span>(<span class="s">"Combate"</span>)
+<span class="k">@export</span> <span class="k">var</span> vida: <span class="t">int</span> = <span class="n">3</span>
+
+<span class="k">func</span> <span class="f">_physics_process</span>(_delta: <span class="t">float</span>) -&gt; <span class="t">void</span>:
+	<span class="c"># ... seu código que calcula a direção até o Player ...</span>
+	velocity = direcao * velocidade
+	<span class="f">move_and_slide</span>()
+</code></pre></figure>
+  <p><b>Linha 5:</b> <code>@export_range(50, 300, 10)</code> pede mínimo 50, máximo 300 e passo 10 (os dois primeiros argumentos são os limites e o terceiro é o passo, segundo a documentação). O tipo <code>float</code> e o valor <code>100.0</code> atendem à regra de que uma variável exportada precisa de valor constante ou de tipo.</p>
+  <p><b>Linhas 4 e 6:</b> <code>@export_group</code> só organiza o Inspetor em seções; as propriedades seguintes entram no grupo.</p>
+  <p><b>Linha 11:</b> o código lê <code>velocidade</code> como lê qualquer variável. <code>@export</code> não muda como você usa o valor.</p>
+
+  <h3>Definindo o valor ao instanciar pelo código</h3>
+  <figure class="codebox"><figcaption>level.gd</figcaption><pre class="gd" id="cod-spawn"><code><span class="k">const</span> CENA_INIMIGO = <span class="f">preload</span>(<span class="s">"res://inimigo.tscn"</span>)
+
+<span class="k">func</span> <span class="f">gerar_inimigo</span>(vel: <span class="t">float</span>) -&gt; <span class="t">void</span>:
+	<span class="k">var</span> inimigo = CENA_INIMIGO.<span class="f">instantiate</span>()
+	inimigo.velocidade = vel
+	<span class="f">add_child</span>(inimigo)
+</code></pre></figure>
+  <p>Troque o caminho pelo da sua cena de inimigo. A atribuição fica <b>entre</b> <code>instantiate()</code> e <code>add_child()</code>. Pela documentação, <code>_ready()</code> roda quando a cena entra na árvore, ou seja, no <code>add_child</code>; então, por consequência, o <code>_ready()</code> já enxerga o valor que você atribuiu. A documentação não mostra esse caso exato, por isso o Desafio 3 pede que você confirme com um <code>print</code>.</p>
+  <p>Como <code>inimigo</code> não tem tipo, o Godot só confere o nome <code>velocidade</code> ao rodar. Se você errar o nome, o erro aparece durante o jogo, não ao digitar.</p></section>
+
+<section class="parte" id="exercicio"><h2>Exercício guiado: preveja antes de testar</h2>
+  <div class="previsao" data-correta="b"><p class="pergunta">No <code>level.tscn</code> há Inimigo1 e Inimigo2, ambos instâncias de <code>inimigo.tscn</code> (velocidade padrão 100). Você seleciona só o Inimigo2 e muda a velocidade para 250 no Inspetor. Quanto vale a velocidade do Inimigo1?</p>
+    <div class="opcoes"><button type="button" data-op="a">250, porque os dois usam o mesmo script</button><button type="button" data-op="b">100, o valor do Inimigo2 fica só nele</button><button type="button" data-op="c">0, até recarregar a cena</button></div>
+    <div class="resposta" aria-live="polite"><p>Cada instância guarda o próprio valor exportado, então o Inimigo1 continua com 100. Este é o comportamento do editor que se espera aqui, mas ele não está na página de documentação que consultei: você vai confirmar no Desafio 2.</p><button class="btn" type="button" data-refazer>Responder de novo</button></div></div>
+  <div class="previsao" data-correta="c"><p class="pergunta">O script tem <code>@export var velocidade: float = 100.0</code> e um <code>_init()</code> que faz <code>velocidade = 120.0</code>. No Inspetor da instância você escreveu 160. Quanto vale <code>velocidade</code> dentro do <code>_ready()</code>?</p>
+    <div class="opcoes"><button type="button" data-op="a">100</button><button type="button" data-op="b">120</button><button type="button" data-op="c">160</button></div>
+    <div class="resposta" aria-live="polite"><p>160. Segundo a documentação, a atribuição do <code>_init()</code> substitui o valor inicial, e o valor definido no Inspetor substitui de novo; o <code>_ready()</code> vem depois. É o que o simulador mostrou no passo 4.</p><button class="btn" type="button" data-refazer>Responder de novo</button></div></div></section>
+
+<section class="parte" id="erros"><h2>Deu erro?</h2>
+  <details><summary>O editor reclama de um <code>@export var x</code> sem nada depois</summary>
+    <p><b>Causa:</b> a documentação diz que uma variável exportada precisa ser inicializada com uma expressão constante ou ter um tipo. Não copiei a mensagem exata do editor, então confira o texto que aparecer no seu.</p>
+    <p><b>Menor correção:</b> <code>@export var x: int</code> ou <code>@export var x = 5</code>.</p></details>
+  <details><summary>Mudei o número no script, mas o inimigo continua com o valor antigo</summary>
+    <p><b>Causa provável:</b> o valor já definido no Inspetor substitui o do script (passo 3 da ordem).</p>
+    <p><b>Menor correção:</b> ajustar o valor no Inspetor da instância.</p></details>
+  <details><summary>Mudei <code>inimigo.velocidade</code> depois do <code>add_child</code> e o <code>_ready()</code> usou o valor antigo</summary>
+    <p><b>Causa (por consequência da ordem, ainda não testada por mim):</b> o <code>_ready()</code> roda no <code>add_child</code>.</p>
+    <p><b>Menor correção:</b> atribuir antes do <code>add_child</code>, como no <code>gerar_inimigo</code>.</p></details>
+  <p class="small">Se a sua mensagem não estiver aqui, copie o texto exato do painel Saída ou Depurador e me mande.</p></section>
+
+<section class="parte" id="desafios"><h2>Desafios</h2>
+  <ul class="desafios">
+    <li><label><input type="checkbox"><span>1. Exportar a velocidade do seu inimigo</span></label>
+      <p class="pronto"><b>Funcionou se:</b> o Inspetor do inimigo mostra um slider de velocidade (de 50 a 300, de 10 em 10, ou o intervalo que servir para o seu jogo) e o inimigo se move com o valor que você escolher.</p></li>
+    <li><label><input type="checkbox"><span>2. Dois inimigos, duas velocidades, um script</span></label>
+      <p class="pronto"><b>Funcionou se:</b> no Level há dois inimigos instanciados com velocidades diferentes, mudadas só no Inspetor, e um alcança o Player antes do outro sem você editar o script entre eles. Anote o que viu ao mudar um deles: o outro mudou?</p></li>
+    <li><label><input type="checkbox"><span>3. Cada novo inimigo nasce mais rápido</span></label>
+      <p class="pronto"><b>Funcionou se:</b> usando <code>gerar_inimigo(vel)</code> no spawn de 10 s, um <code>print(velocidade)</code> no <code>_ready()</code> mostra valores crescentes a cada inimigo (por exemplo 100, 110, 120). Isso também confirma que o <code>_ready()</code> enxerga o valor atribuído antes do <code>add_child</code>.</p>
+      <details><summary>Dica</summary><p>O Level precisa guardar a próxima velocidade em uma variável sua e aumentá-la depois de cada spawn.</p></details></li>
+  </ul>
+  <p class="small">As caixas são só para você se organizar nesta tela. O que vale como concluído é o que você me confirmar.</p>
+  <details><summary>O que foi conferido e o que não foi</summary>
+    <p><b>Conferido</b> em texto-fonte da documentação oficial: na página de exports da Godot 4.5, a sintaxe do <code>@export</code>, o <code>@export_range</code> (mínimo, máximo e passo), o <code>@export_group</code> e a regra de valor constante ou tipo; na página "Godot notifications" da 4.3, a ordem valor inicial, <code>_init()</code>, Inspetor, e que o <code>_init()</code> roda antes de <code>_enter_tree()</code> e <code>_ready()</code>.</p>
+    <p><b>Não conferido:</b> as páginas da 4.7 só abriram com o resumo, sem o texto, então nada foi lido na 4.7.2 em si (os trechos acima são das versões 4.5 e 4.3), e nada foi testado dentro do editor. A atribuição entre <code>instantiate()</code> e <code>add_child()</code>, e o valor por instância, são consequências lógicas ou comportamento do editor que você confirma nos Desafios 2 e 3.</p></details></section>
+
+<section class="parte" id="checagem"><h2>Checagem</h2>
+  <ul><li>Consigo explicar a diferença entre <code>const</code>, <code>@export var</code> e <code>var</code>?</li>
+  <li>Sei dizer por que o valor do Inspetor vence o do <code>_init()</code>?</li>
+  <li>Sei onde atribuir o valor para o <code>_ready()</code> enxergá-lo?</li></ul></section>
+</main>
+<script>
+/* Modelo de aulas de Godot: JS puro, sem bibliotecas. Expõe window.Aula.
+   Funções: destacarLinha, posicaoNoCanvas; automático: índice, previsão, código (linhas + copiar), data-hl. */
+(function(){
+  'use strict';
+  const reduzido = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- código: cada linha vira <span class="ln">, sem alterar o texto ---- */
+  function prepararCodigo(pre){
+    const code = pre.querySelector('code') || pre;
+    const html = code.innerHTML, antes = code.textContent.replace(/\n$/,'');
+    const linhas = html.split('\n'); if (linhas.length > 1 && linhas[linhas.length-1] === '') linhas.pop();
+    const conta = (l,r) => (l.match(r) || []).length;
+    // uma tag aberta que atravessa linhas quebraria o HTML: nesse caso a linha não é tocada
+    if (!linhas.every(l => conta(l,/<span\b/g) === conta(l,/<\/span>/g))){
+      console.warn('[Aula] bloco sem destaque (span atravessa linhas):', pre.id || pre); pre.dataset.semDestaque = '1'; return;
+    }
+    code.innerHTML = linhas.map((l,i) => '<span class="ln" data-n="'+(i+1)+'">'+l+'\n</span>').join('');
+    if (code.textContent.replace(/\n$/,'') !== antes){ code.innerHTML = html; pre.dataset.semDestaque = '1'; console.warn('[Aula] texto mudaria; bloco restaurado:', pre.id || pre); }
+  }
+  function intervalo(spec){
+    if (spec == null) return [];
+    if (typeof spec === 'number') return [spec];
+    if (Array.isArray(spec)) return spec;
+    const out = [];
+    String(spec).split(',').forEach(p => { const [a,b] = p.split('-').map(Number); for (let i=a;i<=(b||a);i++) out.push(i); });
+    return out;
+  }
+  function destacarLinha(id, spec){
+    const pre = document.getElementById(id); if (!pre) return;
+    const alvo = new Set(intervalo(spec));
+    pre.querySelectorAll('.ln').forEach(l => l.classList.toggle('on', alvo.has(Number(l.dataset.n))));
+  }
+  function posicaoNoCanvas(canvas, ev){
+    const r = canvas.getBoundingClientRect();
+    return { x:(ev.clientX - r.left) * canvas.width / r.width, y:(ev.clientY - r.top) * canvas.height / r.height };
+  }
+
+  /* ---- copiar ---- */
+  function barraDoCodigo(pre){
+    const fig = pre.closest('figure.codebox'); if (!fig) return;
+    let cap = fig.querySelector('figcaption'); if (!cap){ cap = document.createElement('figcaption'); cap.textContent = 'GDScript'; fig.prepend(cap); }
+    const grupo = document.createElement('span'); const st = document.createElement('span');
+    st.className = 'copiar-status'; st.setAttribute('role','status');
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'copiar'; b.textContent = 'Copiar código';
+    b.addEventListener('click', async () => {
+      const texto = pre.textContent;
+      try { await navigator.clipboard.writeText(texto); st.textContent = 'Copiado'; }
+      catch(e){ const r = document.createRange(); r.selectNodeContents(pre.querySelector('code') || pre);
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r); st.textContent = 'Selecionado: use Ctrl+C'; }
+      setTimeout(() => { st.textContent = ''; }, 2500);
+    });
+    grupo.append(st, ' ', b); cap.append(grupo);
+  }
+
+  /* ---- previsão: escolher, ver certo/errado com texto, ler a explicação ---- */
+  function iniciarPrevisao(el){
+    const botoes = [...el.querySelectorAll('.opcoes button')], resp = el.querySelector('.resposta'), certa = el.dataset.correta;
+    const limpar = () => { botoes.forEach(b => { b.className = ''; b.removeAttribute('aria-pressed'); b.querySelector('.marca')?.remove(); }); resp.hidden = true; el.dataset.respondida = ''; };
+    botoes.forEach(b => b.addEventListener('click', () => {
+      if (el.dataset.respondida) return;
+      el.dataset.respondida = '1';
+      botoes.forEach(x => { const ok = x.dataset.op === certa;
+        if (x === b || ok){ x.classList.add(ok ? 'certa' : 'errada'); const m = document.createElement('span'); m.className = 'marca'; m.textContent = ok ? 'Certo' : 'Errado'; x.append(m); } });
+      b.setAttribute('aria-pressed','true'); resp.hidden = false;
+    }));
+    const de = resp.querySelector('[data-refazer]'); if (de) de.addEventListener('click', () => { limpar(); botoes[0].focus(); });
+    resp.hidden = true;
+  }
+
+  /* ---- índice: marca a parte visível ---- */
+  function iniciarIndice(){
+    const links = [...document.querySelectorAll('nav.idx a[href^="#"]')]; if (!links.length) return;
+    const porId = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+    const marcar = id => links.forEach(a => { const on = a === porId.get(id); if (on) a.setAttribute('aria-current','true'); else a.removeAttribute('aria-current');
+      if (on){ // rola só a faixa do índice: scrollIntoView também moveria a página e cancelaria a rolagem do clique
+        const ol = a.closest('ol'), dx = a.getBoundingClientRect().left - ol.getBoundingClientRect().left + ol.scrollLeft;
+        ol.scrollTo({ left: dx - (ol.clientWidth - a.offsetWidth) / 2, behavior: reduzido ? 'auto' : 'smooth' }); } });
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) marcar(e.target.id); }), {rootMargin:'-20% 0px -70% 0px'});
+    porId.forEach((_,id) => { const s = document.getElementById(id); if (s) io.observe(s); });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('pre.gd').forEach(pre => { prepararCodigo(pre); barraDoCodigo(pre); });
+    document.querySelectorAll('.previsao').forEach(iniciarPrevisao);
+    iniciarIndice();
+    // qualquer elemento com data-hl="id:3-5,8" destaca essas linhas ao ser acionado
+    document.addEventListener('click', ev => { const el = ev.target.closest('[data-hl]'); if (!el) return;
+      const [id, spec] = el.dataset.hl.split(':'); destacarLinha(id, spec || null); });
+  });
+  window.Aula = { destacarLinha, posicaoNoCanvas };
+})();
+</script>
+<script>
+(() => {
+  const D = 420, X0 = 30, N = 3;                      // distância da corrida e posição inicial
+  const sl = [1,2,3].map(i => document.getElementById('v' + i)), out = [1,2,3].map(i => document.getElementById('o' + i));
+  const cv = document.getElementById('corrida'), g = cv.getContext('2d'), res = document.getElementById('resultado');
+  const reduz = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let modo = 'export', t = 0, rodando = false, ini = 0, raf = 0;
+  const tempo = v => D / v;                            // segundos até a chegada
+  const vel = () => sl.map(s => +s.value);
+  const fmt = n => n.toFixed(1).replace('.', ',');
+  const cor = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888';
+  function desenhar(){
+    g.clearRect(0, 0, cv.width, cv.height); g.font = '21px sans-serif'; /* o canvas encolhe a ~67% no celular: 21px de desenho = ~14px na tela */ g.textBaseline = 'middle';
+    const v = vel();
+    for (let i = 0; i < N; i++){ const y = 55 + i * 80;
+      g.fillStyle = cor('--line'); g.fillRect(X0, y + 18, D, 2);
+      g.fillStyle = cor('--fg'); g.fillRect(X0 + D, y - 28, 3, 56);
+      g.fillStyle = cor('--accent'); const p = Math.min(D, v[i] * t); g.fillRect(X0 + p - 14, y - 14, 28, 28);
+      g.fillStyle = cor('--fg'); g.fillText('Inimigo ' + (i+1) + ': ' + v[i] + ' px/s', X0, y - 30); }
+  }
+  function ajustar(i, valor){
+    if (modo === 'const') sl.forEach((s, k) => { s.value = valor; out[k].textContent = valor; });   // um valor só, no script
+    else { sl[i].value = valor; out[i].textContent = valor; }
+    voltar();
+  }
+  function resumo(){ const v = vel(); return v.map((x, i) => 'Inimigo ' + (i+1) + ' chega em ' + fmt(tempo(x)) + ' s').join(' · '); }
+  function voltar(){ cancelAnimationFrame(raf); rodando = false; t = 0; desenhar(); res.textContent = 'Pronto. Ajuste as velocidades e clique em Correr.'; }
+  function correr(){
+    voltar(); const maior = tempo(Math.min(...vel()));
+    if (reduz){ t = maior; desenhar(); res.textContent = resumo(); return; }
+    rodando = true; ini = performance.now();
+    const passo = agora => { t = Math.min(maior, (agora - ini) / 1000); desenhar();
+      if (t < maior) raf = requestAnimationFrame(passo); else { rodando = false; res.textContent = resumo(); } };
+    raf = requestAnimationFrame(passo);
+  }
+  function definirModo(m){ modo = m;
+    document.querySelectorAll('[data-modo]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.modo === m)));
+    if (m === 'const') ajustar(0, +sl[0].value); else voltar(); }
+  sl.forEach((s, i) => s.addEventListener('input', () => ajustar(i, +s.value)));
+  document.querySelectorAll('[data-modo]').forEach(b => b.addEventListener('click', () => definirModo(b.dataset.modo)));
+  document.getElementById('b-correr').addEventListener('click', correr);
+  document.getElementById('b-voltar').addEventListener('click', voltar);
+
+  // ordem de definição do valor
+  const passos = [
+    { v: null, hl: null, txt: 'Passo 0 de 4. Clique em Próximo passo.' },
+    { v: 100, hl: '1', txt: 'Passo 1 de 4. Valor inicial, o padrão do script: velocidade = 100.' },
+    { v: 120, hl: '3-4', txt: 'Passo 2 de 4. O _init() troca o valor: velocidade = 120.' },
+    { v: 160, hl: '6', txt: 'Passo 3 de 4. O valor definido no Inspetor substitui de novo: velocidade = 160.' },
+    { v: 160, hl: '8-9', txt: 'Passo 4 de 4. O _ready() roda depois e imprime velocidade = 160.' }];
+  let ip = 0; const pe = document.getElementById('passo');
+  function passo(d){ ip = Math.max(0, Math.min(passos.length - 1, ip + d)); pe.textContent = passos[ip].txt; Aula.destacarLinha('cod-ordem', passos[ip].hl); }
+  document.getElementById('p-prox').addEventListener('click', () => passo(1));
+  document.getElementById('p-ant').addEventListener('click', () => passo(-1));
+  document.addEventListener('DOMContentLoaded', () => { desenhar(); });
+  window.__aula15 = { tempo, ajustar, definirModo, vel: () => vel(), modo: () => modo, passo: () => ip };
+  desenhar();
+})();
+</script>
+
+</body></html>
