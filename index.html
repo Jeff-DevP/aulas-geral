@@ -11,414 +11,216 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%233b82f6'/%3E%3Ctext x='50' y='66' font-size='48' text-anchor='middle' fill='white' font-family='system-ui' font-weight='700'%3EA%3C/text%3E%3C/svg%3E" />
   <style>
     :root, [data-theme="dark"] {
-      --bg: #0c1017;
-      --bg-elevated: #12181f;
-      --surface: #171e27;
-      --surface-2: #1e2733;
-      --surface-3: #263040;
-      --fg: #e8eef6;
-      --fg-soft: #c5d0de;
-      --muted: #8b9bb0;
-      --line: #2a3544;
-      --line-soft: #1f2835;
-      --accent: #3b82f6;
-      --accent-hover: #60a5fa;
-      --accent-soft: rgba(59,130,246,0.15);
-      --accent-text: #93c5fd;
-      --good: #34d399;
-      --good-soft: rgba(52,211,153,0.12);
-      --warning: #fbbf24;
-      --radius: 12px;
-      --radius-sm: 8px;
-      --shadow: 0 4px 24px rgba(0,0,0,0.35);
+      --bg: #0c1017; --surface: #171e27; --surface-2: #1e2733; --surface-3: #263040;
+      --fg: #e8eef6; --muted: #8b9bb0; --line: #2a3544;
+      --accent: #3b82f6; --accent-hover: #60a5fa; --accent-soft: rgba(59,130,246,0.15); --accent-text: #93c5fd;
+      --good: #34d399; --good-soft: rgba(52,211,153,0.12); --warning: #fbbf24;
+      --radius: 12px; --radius-sm: 8px; --shadow: 0 4px 24px rgba(0,0,0,0.35);
       --font: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      --mono: ui-monospace, Menlo, Consolas, monospace;
       color-scheme: dark;
     }
-
     [data-theme="light"] {
-      --bg: #f0f3f8;
-      --bg-elevated: #ffffff;
-      --surface: #ffffff;
-      --surface-2: #f5f7fb;
-      --surface-3: #e8edf5;
-      --fg: #0f172a;
-      --fg-soft: #334155;
-      --muted: #64748b;
-      --line: #e2e8f0;
-      --line-soft: #f1f5f9;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --accent-soft: rgba(37,99,235,0.1);
-      --accent-text: #1e40af;
-      --good: #059669;
-      --good-soft: rgba(5,150,105,0.1);
-      --warning: #d97706;
+      --bg: #f0f3f8; --surface: #ffffff; --surface-2: #f5f7fb; --surface-3: #e8edf5;
+      --fg: #0f172a; --muted: #64748b; --line: #e2e8f0;
+      --accent: #2563eb; --accent-hover: #1d4ed8; --accent-soft: rgba(37,99,235,0.1); --accent-text: #1e40af;
+      --good: #059669; --good-soft: rgba(5,150,105,0.1); --warning: #d97706;
       --shadow: 0 4px 24px rgba(15,23,42,0.08);
       color-scheme: light;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--fg);
-      min-height: 100dvh;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-    }
+    body { font-family: var(--font); background: var(--bg); color: var(--fg); min-height: 100dvh; line-height: 1.5; -webkit-font-smoothing: antialiased; }
 
     header.app-header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
+      position: sticky; top: 0; z-index: 50;
       background: color-mix(in srgb, var(--bg) 88%, transparent);
       backdrop-filter: blur(16px) saturate(1.4);
       border-bottom: 1px solid var(--line);
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      padding: 10px 16px; display: flex; align-items: center; gap: 10px;
     }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
-      min-width: 0;
-    }
+    .logo { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
     .logo-icon {
-      width: 32px; height: 32px;
-      border-radius: 9px;
+      width: 32px; height: 32px; border-radius: 9px;
       background: linear-gradient(135deg, #3b82f6, #2563eb);
       display: flex; align-items: center; justify-content: center;
-      color: white; font-weight: 700; font-size: 0.95rem;
-      flex-shrink: 0;
+      color: white; font-weight: 700; font-size: 0.95rem; flex-shrink: 0;
       box-shadow: 0 2px 8px rgba(59,130,246,0.35);
     }
-    .logo h1 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .logo h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .header-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
     .btn {
-      font: inherit;
-      font-size: 0.82rem;
-      font-weight: 600;
-      border: 1px solid var(--line);
-      background: var(--surface);
-      color: var(--fg);
-      padding: 7px 11px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all .15s ease;
+      font: inherit; font-size: 0.82rem; font-weight: 600;
+      border: 1px solid var(--line); background: var(--surface); color: var(--fg);
+      padding: 7px 11px; border-radius: var(--radius-sm); cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all .15s ease;
     }
     .btn:hover { background: var(--surface-2); border-color: var(--accent); }
     .btn:active { transform: scale(0.97); }
-    .btn.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-    .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn.primary:hover { background: var(--accent-hover); }
     .btn.icon-only { padding: 7px; }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .btn .spin { animation: spin 0.75s linear infinite; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn .spin { animation: spin .75s linear infinite; }
+    .btn.active-filter { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-text); }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    main { padding: 16px; max-width: 680px; margin: 0 auto; padding-bottom: 90px; }
+    main { padding: 16px; max-width: 680px; margin: 0 auto; padding-bottom: 100px; }
 
-    .top-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-    .status {
-      font-size: 0.8rem;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-    .dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--muted);
-    }
+    .top-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+    .status { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
     .dot.online { background: var(--good); box-shadow: 0 0 0 3px var(--good-soft); }
     .dot.offline { background: #f87171; }
 
-    .progress-summary {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--accent-text);
-      background: var(--accent-soft);
-      padding: 3px 10px;
-      border-radius: 999px;
-    }
-
-    .progress-bar {
-      height: 5px;
-      background: var(--surface-3);
-      border-radius: 99px;
-      overflow: hidden;
-      margin-bottom: 18px;
-    }
-    .progress-bar > div {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), #60a5fa);
-      border-radius: 99px;
-      transition: width .45s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-
-    .search-wrap {
-      position: relative;
-      margin-bottom: 18px;
-    }
-    .search-wrap svg {
-      position: absolute;
-      left: 12px; top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      pointer-events: none;
-    }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+    .search-wrap { position: relative; flex: 1; min-width: 140px; }
+    .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
     .search-wrap input {
-      width: 100%;
-      font: inherit;
-      font-size: 0.92rem;
-      padding: 11px 14px 11px 40px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--surface);
-      color: var(--fg);
-      outline: none;
-      transition: border-color .15s, box-shadow .15s;
+      width: 100%; font: inherit; font-size: 0.92rem;
+      padding: 10px 14px 10px 40px; border: 1px solid var(--line);
+      border-radius: var(--radius); background: var(--surface); color: var(--fg);
+      outline: none; transition: border-color .15s, box-shadow .15s;
     }
     .search-wrap input::placeholder { color: var(--muted); }
-    .search-wrap input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-soft);
-    }
+    .search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
-    .last-viewed {
-      display: none;
-      margin-bottom: 20px;
-      padding: 12px 14px;
-      background: var(--accent-soft);
-      border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-      border-radius: var(--radius);
-      cursor: pointer;
-      transition: background .15s;
+    .stats-card {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 16px; margin-bottom: 18px;
     }
-    .last-viewed.show { display: block; }
-    .last-viewed:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); }
-    .last-viewed .label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--accent-text);
-      margin-bottom: 3px;
-    }
-    .last-viewed .title { font-weight: 600; font-size: 0.95rem; }
-    .last-viewed .cat { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+    .stats-card h3 { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 12px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .stat-item { text-align: center; padding: 10px 6px; background: var(--surface-2); border-radius: var(--radius-sm); }
+    .stat-item .val { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; color: var(--accent-text); font-variant-numeric: tabular-nums; }
+    .stat-item .lbl { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+    .stats-bar { height: 6px; background: var(--surface-3); border-radius: 99px; overflow: hidden; margin-top: 14px; }
+    .stats-bar > div { height: 100%; background: linear-gradient(90deg, var(--accent), #60a5fa); border-radius: 99px; transition: width .45s cubic-bezier(0.22,1,0.36,1); }
+    .stats-pct { font-size: 0.78rem; color: var(--muted); margin-top: 6px; text-align: right; }
+    .stats-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 
-    .cat { margin-bottom: 28px; }
-    .cat-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
+    .courses { display: flex; flex-direction: column; gap: 10px; }
+    .course-card {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 14px 16px; cursor: pointer;
+      transition: all .15s ease; text-align: left; width: 100%; color: inherit; font: inherit;
     }
-    .cat-header h2 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
+    .course-card:hover { border-color: var(--accent); background: var(--surface-2); transform: translateY(-1px); box-shadow: var(--shadow); }
+    .course-icon {
+      width: 44px; height: 44px; border-radius: 12px; background: var(--accent-soft); color: var(--accent-text);
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; flex-shrink: 0;
     }
-    .cat-header .badge {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--muted);
-      background: var(--surface-3);
-      padding: 2px 8px;
-      border-radius: 999px;
-    }
+    .course-info { flex: 1; min-width: 0; }
+    .course-info .name { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
+    .course-info .meta { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .course-progress { font-size: 0.78rem; font-weight: 600; color: var(--accent-text); background: var(--accent-soft); padding: 3px 9px; border-radius: 999px; flex-shrink: 0; }
+    .course-arrow { color: var(--muted); flex-shrink: 0; }
 
-    .section-label {
-      font-size: 0.72rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin: 16px 0 8px;
-      padding-left: 2px;
-    }
+    .course-hero { margin-bottom: 14px; }
+    .course-hero h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+    .course-hero .sub { font-size: 0.88rem; color: var(--muted); }
+    .progress-bar { height: 5px; background: var(--surface-3); border-radius: 99px; overflow: hidden; margin: 12px 0 4px; }
+    .progress-bar > div { height: 100%; background: linear-gradient(90deg, var(--accent), #60a5fa); border-radius: 99px; transition: width .45s cubic-bezier(0.22,1,0.36,1); }
+
+    .section-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 16px 0 8px; padding-left: 2px; }
 
     .lessons { display: flex; flex-direction: column; gap: 6px; }
     .lesson {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 11px 13px;
-      cursor: pointer;
-      transition: all .15s ease;
-      text-align: left;
-      width: 100%;
-      color: inherit;
-      font: inherit;
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 11px 13px; cursor: pointer;
+      transition: all .15s ease; text-align: left; width: 100%; color: inherit; font: inherit;
     }
-    .lesson:hover {
-      border-color: var(--accent);
-      background: var(--surface-2);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-    }
-    .lesson:active { transform: translateY(0); }
-    .lesson.done {
-      border-color: color-mix(in srgb, var(--good) 40%, var(--line));
-      background: var(--good-soft);
-    }
-    .lesson .num {
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--accent-text);
-      min-width: 2.3em;
-      text-align: center;
-    }
-    .lesson .num.extra {
-      color: var(--warning);
-      font-size: 0.68rem;
-      letter-spacing: -0.02em;
-    }
+    .lesson:hover { border-color: var(--accent); background: var(--surface-2); transform: translateY(-1px); box-shadow: var(--shadow); }
+    .lesson.done { border-color: color-mix(in srgb, var(--good) 40%, var(--line)); background: var(--good-soft); }
+    .lesson .num { font-family: var(--mono); font-size: 0.78rem; font-weight: 600; color: var(--accent-text); min-width: 2.3em; text-align: center; }
+    .lesson .num.extra { color: var(--warning); font-size: 0.68rem; }
     .lesson .info { flex: 1; min-width: 0; }
-    .lesson .title {
-      font-weight: 600;
-      font-size: 0.92rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: var(--fg);
-    }
-    .lesson .file {
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-top: 1px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .check {
-      width: 22px; height: 22px;
-      border-radius: 50%;
-      border: 2px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 0.7rem;
-      transition: all .15s;
-      color: transparent;
-    }
-    .lesson.done .check {
-      background: var(--good);
-      border-color: var(--good);
-      color: #fff;
-    }
+    .lesson .title { font-weight: 600; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lesson .file { font-size: 0.72rem; color: var(--muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+    .lesson .note-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--warning); flex-shrink: 0; }
+    .check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.7rem; color: transparent; transition: all .15s; }
+    .lesson.done .check { background: var(--good); border-color: var(--good); color: #fff; }
 
-    .empty, .loading {
-      text-align: center;
-      padding: 56px 20px;
-      color: var(--muted);
-    }
+    .empty, .loading { text-align: center; padding: 56px 20px; color: var(--muted); }
     .loading { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-    .spinner {
-      width: 28px; height: 28px;
-      border: 3px solid var(--line);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
+    .spinner { width: 28px; height: 28px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
     .progress-text { font-size: 0.82rem; color: var(--muted); max-width: 280px; }
+    .error-box { background: var(--surface); border: 1px solid #f87171; border-radius: var(--radius); padding: 16px; margin-bottom: 16px; font-size: 0.9rem; }
+    .no-match { text-align: center; padding: 32px; color: var(--muted); font-size: 0.9rem; }
 
-    .error-box {
-      background: var(--surface);
-      border: 1px solid #f87171;
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 16px;
-      font-size: 0.9rem;
-    }
-
-    #viewer {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      background: var(--bg);
-      display: none;
-      flex-direction: column;
-    }
+    /* Viewer */
+    #viewer { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: none; flex-direction: column; }
     #viewer.open { display: flex; }
     #viewer .app-header { flex-shrink: 0; }
-    #viewer iframe {
-      flex: 1;
-      border: 0;
-      width: 100%;
-      background: #fff;
+    #viewer iframe { flex: 1; border: 0; width: 100%; background: #fff; min-height: 0; }
+
+    .viewer-footer {
+      flex-shrink: 0; border-top: 1px solid var(--line);
+      background: var(--surface); padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 8px;
     }
+    .viewer-nav { display: flex; gap: 8px; }
+    .viewer-nav .btn { flex: 1; justify-content: center; }
+    .note-box {
+      display: none; flex-direction: column; gap: 6px;
+    }
+    .note-box.open { display: flex; }
+    .note-box textarea {
+      width: 100%; min-height: 72px; font: inherit; font-size: 0.88rem;
+      padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-sm);
+      background: var(--bg); color: var(--fg); resize: vertical; outline: none;
+    }
+    .note-box textarea:focus { border-color: var(--accent); }
+    .note-box .note-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
     .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(120px);
-      background: var(--surface-2);
-      border: 1px solid var(--line);
-      color: var(--fg);
-      padding: 11px 18px;
-      border-radius: 12px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      z-index: 200;
-      transition: transform .3s cubic-bezier(0.22, 1, 0.36, 1);
-      max-width: 90vw;
-      text-align: center;
-      box-shadow: var(--shadow);
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120px);
+      background: var(--surface-2); border: 1px solid var(--line); color: var(--fg);
+      padding: 11px 18px; border-radius: 12px; font-size: 0.88rem; font-weight: 500;
+      z-index: 200; transition: transform .3s cubic-bezier(0.22,1,0.36,1);
+      max-width: 90vw; text-align: center; box-shadow: var(--shadow);
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
-    .no-match { text-align: center; padding: 32px; color: var(--muted); font-size: 0.9rem; }
+    .menu-dropdown {
+      position: relative;
+    }
+    .menu-panel {
+      display: none; position: absolute; right: 0; top: calc(100% + 6px);
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      box-shadow: var(--shadow); min-width: 180px; z-index: 60; padding: 6px;
+    }
+    .menu-panel.open { display: block; }
+    .menu-panel button {
+      display: block; width: 100%; text-align: left; font: inherit; font-size: 0.88rem;
+      padding: 10px 12px; border: 0; background: transparent; color: var(--fg);
+      border-radius: var(--radius-sm); cursor: pointer;
+    }
+    .menu-panel button:hover { background: var(--surface-2); }
   </style>
 </head>
 <body>
   <header class="app-header">
+    <button class="btn back-btn" id="btn-nav-back" hidden>←</button>
     <div class="logo">
       <div class="logo-icon">A</div>
-      <h1>Aulas Gerais</h1>
+      <h1 id="header-title">Aulas Gerais</h1>
     </div>
     <div class="header-actions">
-      <button class="btn icon-only" id="btn-theme" title="Alternar tema" aria-label="Alternar tema">
+      <button class="btn icon-only" id="btn-theme" title="Tema">
         <svg id="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
         <svg id="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
-      <button class="btn" id="btn-update" title="Verificar atualizações">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        <span class="btn-label">Atualizar</span>
-      </button>
+      <div class="menu-dropdown">
+        <button class="btn icon-only" id="btn-menu" title="Mais">⋯</button>
+        <div class="menu-panel" id="menu-panel">
+          <button type="button" id="menu-export">Exportar progresso</button>
+          <button type="button" id="menu-import">Importar progresso</button>
+          <button type="button" id="menu-update">Atualizar aulas</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -428,28 +230,20 @@
         <span class="dot" id="status-dot"></span>
         <span id="status-text">Carregando...</span>
       </div>
-      <div class="progress-summary" id="progress-summary" hidden>0/0</div>
     </div>
 
-    <div class="progress-bar" id="progress-wrap" hidden>
-      <div id="progress-fill" style="width:0%"></div>
-    </div>
-
-    <div class="search-wrap" id="search-wrap" hidden>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input type="search" id="search" placeholder="Buscar aula..." autocomplete="off" />
-    </div>
-
-    <div class="last-viewed" id="last-viewed">
-      <div class="label">Continuar de onde parou</div>
-      <div class="title" id="last-title"></div>
-      <div class="cat" id="last-cat"></div>
+    <div class="toolbar" id="toolbar" hidden>
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" id="search" placeholder="Buscar..." autocomplete="off" />
+      </div>
+      <button class="btn" id="btn-filter-pending" title="Mostrar só não concluídas">Pendentes</button>
     </div>
 
     <div id="content">
       <div class="loading">
         <div class="spinner"></div>
-        <span>Carregando aulas...</span>
+        <span>Carregando...</span>
         <span class="progress-text" id="load-progress"></span>
       </div>
     </div>
@@ -459,10 +253,26 @@
     <header class="app-header">
       <button class="btn" id="btn-back">← Voltar</button>
       <h1 id="viewer-title" style="font-size:0.95rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600"></h1>
+      <button class="btn icon-only" id="btn-note" title="Nota">📝</button>
       <button class="btn" id="btn-done">Concluir</button>
     </header>
     <iframe id="frame" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+    <div class="viewer-footer">
+      <div class="note-box" id="note-box">
+        <textarea id="note-text" placeholder="Sua anotação rápida..."></textarea>
+        <div class="note-actions">
+          <button class="btn" id="btn-note-clear" type="button">Limpar</button>
+          <button class="btn primary" id="btn-note-save" type="button">Salvar nota</button>
+        </div>
+      </div>
+      <div class="viewer-nav">
+        <button class="btn" id="btn-prev">← Anterior</button>
+        <button class="btn" id="btn-next">Próxima →</button>
+      </div>
+    </div>
   </div>
+
+  <input type="file" id="import-file" accept="application/json,.json" hidden />
 
   <div class="toast" id="toast"></div>
 
@@ -473,12 +283,16 @@
 
   let data = { categories: {}, lastUpdate: null };
   let progress = JSON.parse(localStorage.getItem('progress') || '{}');
+  let notes = JSON.parse(localStorage.getItem('notes') || '{}');
   let lastViewed = JSON.parse(localStorage.getItem('lastViewed') || 'null');
   let currentLesson = null;
+  let currentCourse = null;
   let searchQuery = '';
+  let onlyPending = false;
+  let lessonListForNav = []; // ordered list for prev/next
 
-  const $ = (s) => document.querySelector(s);
-  const $$ = (s) => Array.from(document.querySelectorAll(s));
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
 
   function toast(msg, time = 2600) {
     const t = $('#toast');
@@ -487,42 +301,32 @@
     clearTimeout(t._tid);
     t._tid = setTimeout(() => t.classList.remove('show'), time);
   }
-
   function saveProgress() { localStorage.setItem('progress', JSON.stringify(progress)); }
+  function saveNotes() { localStorage.setItem('notes', JSON.stringify(notes)); }
   function saveLastViewed(path) {
     const meta = findLesson(path);
     if (!meta) return;
     lastViewed = { path, title: meta.title, category: meta.category };
     localStorage.setItem('lastViewed', JSON.stringify(lastViewed));
   }
-
   function escapeHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
-
   function encodePath(path) {
     return path.split('/').map(encodeURIComponent).join('/');
   }
 
   function parseLesson(html, filename) {
-    let num = 9999;
-    let isExtra = false;
-
+    let num = 9999, isExtra = false;
     const mNum = html.match(/Aula\s+(\d+)/i) || html.match(/aula\s*0*(\d+)/i);
-    if (mNum) {
-      num = parseInt(mNum[1], 10);
-    } else if (/extra/i.test(html.slice(0, 2000)) || /extra/i.test(filename)) {
-      isExtra = true;
-      num = 9000;
-    }
-
+    if (mNum) num = parseInt(mNum[1], 10);
+    else if (/extra/i.test(html.slice(0, 2000)) || /extra/i.test(filename)) { isExtra = true; num = 9000; }
     let title = filename.replace(/\.html$/i, '').replace(/[-_]/g, ' ');
     const mTitle = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     if (mTitle) title = mTitle[1].trim();
     const mH1 = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
     if (mH1 && mH1[1].trim().length > 3) title = mH1[1].trim();
     title = title.replace(/^Aula\s+\d+\s*[·\-|:]?\s*/i, '').trim() || title;
-
     return { num, title, isExtra };
   }
 
@@ -534,8 +338,7 @@
     $('#icon-sun').style.display = isDark ? 'block' : 'none';
     document.querySelector('meta[name="theme-color"]').content = isDark ? '#0c1017' : '#f0f3f8';
   }
-  const savedTheme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-  applyTheme(savedTheme);
+  applyTheme(localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
 
   const DB_NAME = 'aulas-geral', STORE = 'lessons';
   function openDB() {
@@ -580,7 +383,6 @@
     if (!res.ok) throw new Error(`GitHub API ${res.status}`);
     return res.json();
   }
-
   async function fetchRaw(path, downloadUrl) {
     const url = downloadUrl || `${RAW_BASE}/${encodePath(path)}`;
     const res = await fetch(url);
@@ -589,40 +391,30 @@
   }
 
   async function syncFromGitHub(force = false) {
-    const btn = $('#btn-update');
     const loadProgress = $('#load-progress');
-    btn.disabled = true;
-    btn.innerHTML = `<svg class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> <span class="btn-label">Atualizando...</span>`;
-
     try {
       const root = await githubGet();
       const folders = root.filter(i => i.type === 'dir' && !i.name.startsWith('.'));
-
-      if (folders.length === 0) {
-        $('#content').innerHTML = `<div class="empty"><p>Nenhuma pasta encontrada.</p><p style="margin-top:8px;font-size:0.9rem">Crie pastas e coloque os .html dentro.</p></div>`;
+      if (!folders.length) {
+        $('#content').innerHTML = `<div class="empty"><p>Nenhuma pasta encontrada.</p></div>`;
         return;
       }
-
       const newData = { categories: {}, lastUpdate: Date.now() };
       let totalFiles = 0, doneFiles = 0;
       const folderFiles = [];
-
       for (const folder of folders) {
         const files = await githubGet(folder.path);
         const htmls = files.filter(f => f.type === 'file' && f.name.toLowerCase().endsWith('.html'));
         folderFiles.push({ folder, htmls });
         totalFiles += htmls.length;
       }
-
       for (const { folder, htmls } of folderFiles) {
         const lessons = [];
         for (const f of htmls) {
           doneFiles++;
           if (loadProgress) loadProgress.textContent = `${doneFiles}/${totalFiles} · ${f.name}`;
-
           let cached = await idbGet(f.path);
           let content = null, meta = null;
-
           if (cached && cached.sha === f.sha && !force) {
             content = cached.content;
             meta = { num: cached.num, title: cached.title, isExtra: cached.isExtra || false };
@@ -635,7 +427,6 @@
               content, category: folder.name
             });
           }
-
           lessons.push({
             path: f.path, name: f.name, sha: f.sha,
             num: meta.num, title: meta.title, isExtra: meta.isExtra,
@@ -645,7 +436,6 @@
         lessons.sort((a, b) => a.num - b.num || a.title.localeCompare(b.title, 'pt-BR'));
         newData.categories[folder.name] = lessons;
       }
-
       data = newData;
       localStorage.setItem('data-meta', JSON.stringify({
         categories: Object.fromEntries(
@@ -656,23 +446,18 @@
         ),
         lastUpdate: data.lastUpdate
       }));
-
       render();
       toast(force ? 'Atualizado!' : 'Aulas carregadas');
       updateStatus(true);
     } catch (err) {
       console.error(err);
       const hasCache = await loadFromCache();
-      if (hasCache) {
-        toast('Sem conexão. Usando cache.', 3200);
-        updateStatus(false);
-      } else {
-        $('#content').innerHTML = `<div class="error-box"><p><strong>Erro ao carregar</strong></p><p style="margin-top:8px">${escapeHtml(err.message)}</p></div>`;
+      if (hasCache) { toast('Sem conexão. Usando cache.', 3200); updateStatus(false); }
+      else {
+        $('#content').innerHTML = `<div class="error-box"><p><strong>Erro</strong></p><p style="margin-top:8px">${escapeHtml(err.message)}</p></div>`;
         updateStatus(false);
       }
     } finally {
-      btn.disabled = false;
-      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> <span class="btn-label">Atualizar</span>`;
       if (loadProgress) loadProgress.textContent = '';
     }
   }
@@ -706,78 +491,161 @@
     return true;
   }
 
+  function getStats(courseName = null) {
+    let total = 0, done = 0, extras = 0;
+    const cats = courseName ? [courseName] : Object.keys(data.categories);
+    for (const cat of cats) {
+      for (const l of (data.categories[cat] || [])) {
+        total++;
+        if (progress[l.path]) done++;
+        if (l.isExtra || l.num >= 9000) extras++;
+      }
+    }
+    return { total, done, extras, pct: total ? Math.round(done / total * 100) : 0 };
+  }
+
+  function courseIcon(name) {
+    const n = name.toLowerCase();
+    if (n.includes('godot')) return '🎮';
+    if (n.includes('pixel')) return '🎨';
+    if (n.includes('viol') || n.includes('guitar') || n.includes('music')) return '🎸';
+    if (n.includes('python')) return '🐍';
+    if (n.includes('js') || n.includes('javascript')) return '⚡';
+    if (n.includes('web')) return '🌐';
+    return name.charAt(0).toUpperCase();
+  }
+
   function matchesSearch(lesson) {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    return lesson.title.toLowerCase().includes(q) ||
-           lesson.name.toLowerCase().includes(q) ||
-           String(lesson.num).includes(q);
+    return lesson.title.toLowerCase().includes(q) || lesson.name.toLowerCase().includes(q) || String(lesson.num).includes(q);
+  }
+
+  function filterLesson(l) {
+    if (!matchesSearch(l)) return false;
+    if (onlyPending && progress[l.path]) return false;
+    return true;
   }
 
   function render() {
+    if (currentCourse) renderCourse(currentCourse);
+    else renderHome();
+    $('#btn-filter-pending').classList.toggle('active-filter', onlyPending);
+  }
+
+  function renderHome() {
+    $('#btn-nav-back').hidden = true;
+    $('#header-title').textContent = 'Aulas Gerais';
     const cats = Object.keys(data.categories).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-    const hasAny = cats.some(c => data.categories[c].length > 0);
+    const hasAny = cats.some(c => data.categories[c].length);
 
     if (!hasAny) {
-      $('#content').innerHTML = `<div class="empty"><p>Nenhuma aula encontrada.</p></div>`;
-      $('#progress-wrap').hidden = true;
-      $('#search-wrap').hidden = true;
-      $('#progress-summary').hidden = true;
+      $('#content').innerHTML = `<div class="empty"><p>Nenhum curso encontrado.</p></div>`;
+      $('#toolbar').hidden = true;
       return;
     }
+    $('#toolbar').hidden = false;
+    $('#search').placeholder = 'Buscar curso ou aula...';
 
-    $('#search-wrap').hidden = false;
-
-    let total = 0, done = 0;
-    for (const cat of cats) {
-      for (const l of data.categories[cat]) {
-        total++;
-        if (progress[l.path]) done++;
-      }
-    }
-    $('#progress-wrap').hidden = false;
-    $('#progress-fill').style.width = (total ? Math.round(done / total * 100) : 0) + '%';
-    $('#progress-summary').hidden = false;
-    $('#progress-summary').textContent = `${done}/${total}`;
-
-    const lv = $('#last-viewed');
-    if (lastViewed && findLesson(lastViewed.path) && !searchQuery) {
-      lv.classList.add('show');
-      $('#last-title').textContent = lastViewed.title;
-      $('#last-cat').textContent = lastViewed.category;
-    } else {
-      lv.classList.remove('show');
-    }
-
-    let html = '';
-    let anyMatch = false;
-
-    for (const cat of cats) {
-      const all = data.categories[cat];
-      const normal = all.filter(l => !l.isExtra && l.num < 9000 && matchesSearch(l));
-      const extras = all.filter(l => (l.isExtra || l.num >= 9000) && matchesSearch(l));
-      if (!normal.length && !extras.length) continue;
-      anyMatch = true;
-
-      const catDone = all.filter(l => progress[l.path]).length;
-
-      html += `<div class="cat">
-        <div class="cat-header">
-          <h2>${escapeHtml(cat)}</h2>
-          <span class="badge">${catDone}/${all.length}</span>
+    const global = getStats();
+    let html = `
+      <div class="stats-card">
+        <h3>Seu progresso</h3>
+        <div class="stats-grid">
+          <div class="stat-item"><div class="val">${global.done}</div><div class="lbl">Concluídas</div></div>
+          <div class="stat-item"><div class="val">${global.total}</div><div class="lbl">Total</div></div>
+          <div class="stat-item"><div class="val">${global.pct}%</div><div class="lbl">Progresso</div></div>
         </div>
-        <div class="lessons">`;
+        <div class="stats-bar"><div style="width:${global.pct}%"></div></div>
+        <div class="stats-pct">${global.done} de ${global.total} aulas</div>
+        <div class="stats-actions">
+          <button class="btn" type="button" id="btn-export-home">Exportar backup</button>
+          <button class="btn" type="button" id="btn-import-home">Importar</button>
+        </div>
+      </div>
+    `;
 
+    if (lastViewed && findLesson(lastViewed.path) && !searchQuery) {
+      html += `
+        <button class="course-card" id="btn-continue" style="margin-bottom:14px;border-color:color-mix(in srgb, var(--accent) 40%, var(--line));background:var(--accent-soft)">
+          <div class="course-icon">▶</div>
+          <div class="course-info">
+            <div class="name" style="font-size:0.95rem">${escapeHtml(lastViewed.title)}</div>
+            <div class="meta">Continuar · ${escapeHtml(lastViewed.category)}</div>
+          </div>
+        </button>`;
+    }
+
+    if (searchQuery) {
+      let any = false;
+      html += `<div class="lessons">`;
+      for (const cat of cats) {
+        const hits = (data.categories[cat] || []).filter(filterLesson);
+        if (!hits.length) continue;
+        any = true;
+        html += `<div class="section-label">${escapeHtml(cat)}</div>`;
+        html += hits.map(lessonCard).join('');
+      }
+      html += `</div>`;
+      if (!any) html += `<div class="no-match">Nada encontrado</div>`;
+    } else {
+      html += `<div class="courses">`;
+      for (const cat of cats) {
+        const lessons = data.categories[cat] || [];
+        if (!lessons.length) continue;
+        const st = getStats(cat);
+        html += `
+          <button class="course-card" data-course="${escapeHtml(cat)}">
+            <div class="course-icon">${courseIcon(cat)}</div>
+            <div class="course-info">
+              <div class="name">${escapeHtml(cat)}</div>
+              <div class="meta">${lessons.length} aula${lessons.length !== 1 ? 's' : ''}${st.extras ? ` · ${st.extras} extra${st.extras !== 1 ? 's' : ''}` : ''}</div>
+            </div>
+            <span class="course-progress">${st.done}/${st.total}</span>
+            <span class="course-arrow">›</span>
+          </button>`;
+      }
+      html += `</div>`;
+    }
+
+    $('#content').innerHTML = html;
+    $$('.course-card[data-course]').forEach(el => el.addEventListener('click', () => openCourse(el.dataset.course)));
+    const cont = $('#btn-continue');
+    if (cont) cont.addEventListener('click', () => openLesson(lastViewed.path));
+    $$('.lesson').forEach(el => el.addEventListener('click', () => openLesson(el.dataset.path)));
+    const ex = $('#btn-export-home'); if (ex) ex.addEventListener('click', exportProgress);
+    const im = $('#btn-import-home'); if (im) im.addEventListener('click', () => $('#import-file').click());
+  }
+
+  function renderCourse(courseName) {
+    const lessons = data.categories[courseName] || [];
+    $('#btn-nav-back').hidden = false;
+    $('#header-title').textContent = courseName;
+    $('#toolbar').hidden = false;
+    $('#search').placeholder = 'Buscar nesta pasta...';
+
+    const st = getStats(courseName);
+    const normal = lessons.filter(l => !l.isExtra && l.num < 9000 && filterLesson(l));
+    const extras = lessons.filter(l => (l.isExtra || l.num >= 9000) && filterLesson(l));
+    lessonListForNav = [...lessons.filter(l => !l.isExtra && l.num < 9000), ...lessons.filter(l => l.isExtra || l.num >= 9000)];
+
+    let html = `
+      <div class="course-hero">
+        <h2>${escapeHtml(courseName)}</h2>
+        <div class="sub">${st.done} de ${st.total} concluídas · ${st.pct}%</div>
+        <div class="progress-bar"><div style="width:${st.pct}%"></div></div>
+      </div>`;
+
+    if (!normal.length && !extras.length) {
+      html += `<div class="no-match">${searchQuery || onlyPending ? 'Nenhuma aula encontrada com esse filtro' : 'Nenhuma aula neste curso.'}</div>`;
+    } else {
+      html += `<div class="lessons">`;
       if (normal.length) html += normal.map(lessonCard).join('');
       if (extras.length) {
         html += `<div class="section-label">Aulas extras</div>`;
         html += extras.map(lessonCard).join('');
       }
-      html += `</div></div>`;
-    }
-
-    if (!anyMatch) {
-      html = `<div class="no-match">Nenhuma aula encontrada para “${escapeHtml(searchQuery)}”</div>`;
+      html += `</div>`;
     }
 
     $('#content').innerHTML = html;
@@ -787,14 +655,46 @@
   function lessonCard(l) {
     const numLabel = l.isExtra || l.num >= 9000 ? 'Extra' : l.num;
     const numClass = (l.isExtra || l.num >= 9000) ? 'num extra' : 'num';
+    const hasNote = !!(notes[l.path] && notes[l.path].trim());
     return `<button class="lesson ${progress[l.path] ? 'done' : ''}" data-path="${escapeHtml(l.path)}">
       <span class="${numClass}">${numLabel}</span>
       <div class="info">
         <div class="title">${escapeHtml(l.title)}</div>
-        <div class="file">${escapeHtml(l.name)}</div>
+        <div class="file">${hasNote ? '<span class="note-dot" title="Tem nota"></span>' : ''}${escapeHtml(l.name)}</div>
       </div>
       <div class="check">✓</div>
     </button>`;
+  }
+
+  function openCourse(name) {
+    currentCourse = name;
+    searchQuery = '';
+    $('#search').value = '';
+    render();
+    window.scrollTo(0, 0);
+  }
+  function goHome() {
+    currentCourse = null;
+    searchQuery = '';
+    $('#search').value = '';
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  function buildNavList(path) {
+    const meta = findLesson(path);
+    if (!meta) return;
+    const lessons = data.categories[meta.category] || [];
+    lessonListForNav = [
+      ...lessons.filter(l => !l.isExtra && l.num < 9000),
+      ...lessons.filter(l => l.isExtra || l.num >= 9000)
+    ];
+  }
+
+  function updateNavButtons() {
+    const idx = lessonListForNav.findIndex(l => l.path === currentLesson);
+    $('#btn-prev').disabled = idx <= 0;
+    $('#btn-next').disabled = idx < 0 || idx >= lessonListForNav.length - 1;
   }
 
   async function openLesson(path) {
@@ -802,12 +702,17 @@
     const meta = findLesson(path);
     $('#viewer-title').textContent = meta ? meta.title : path.split('/').pop();
     saveLastViewed(path);
+    buildNavList(path);
+    updateNavButtons();
+
+    // notes
+    $('#note-text').value = notes[path] || '';
+    $('#note-box').classList.remove('open');
 
     let content = null;
     const cached = await idbGet(path);
-    if (cached?.content) {
-      content = cached.content;
-    } else {
+    if (cached?.content) content = cached.content;
+    else {
       try {
         content = await fetchRaw(path, meta?.download_url);
         const parsed = parseLesson(content, path.split('/').pop());
@@ -823,7 +728,6 @@
     const frame = $('#frame');
     frame.src = url;
     frame.onload = () => setTimeout(() => URL.revokeObjectURL(url), 1500);
-
     $('#viewer').classList.add('open');
     document.body.style.overflow = 'hidden';
     updateDoneBtn();
@@ -856,6 +760,12 @@
     render();
   }
 
+  function goPrevNext(dir) {
+    const idx = lessonListForNav.findIndex(l => l.path === currentLesson);
+    const next = lessonListForNav[idx + dir];
+    if (next) openLesson(next.path);
+  }
+
   function updateStatus(online) {
     const dot = $('#status-dot');
     const text = $('#status-text');
@@ -871,58 +781,68 @@
     }
   }
 
+  // Backup
+  function exportProgress() {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      progress,
+      notes,
+      lastViewed
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `aulas-geral-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Backup exportado');
+  }
+
+  function importProgress(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const payload = JSON.parse(reader.result);
+        if (payload.progress && typeof payload.progress === 'object') {
+          progress = { ...progress, ...payload.progress };
+          saveProgress();
+        }
+        if (payload.notes && typeof payload.notes === 'object') {
+          notes = { ...notes, ...payload.notes };
+          saveNotes();
+        }
+        if (payload.lastViewed) {
+          lastViewed = payload.lastViewed;
+          localStorage.setItem('lastViewed', JSON.stringify(lastViewed));
+        }
+        render();
+        toast('Progresso importado');
+      } catch (e) {
+        toast('Arquivo inválido');
+      }
+    };
+    reader.readAsText(file);
+  }
+
   async function forceAppRefresh() {
-    // Clear all caches
     if ('caches' in window) {
       const keys = await caches.keys();
       await Promise.all(keys.map(k => caches.delete(k)));
     }
-    // Tell SW to clear and skip waiting
     if (navigator.serviceWorker?.controller) {
       navigator.serviceWorker.controller.postMessage('CLEAR_CACHE');
       navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
     }
-    // Unregister old SW so next load gets fresh one
     if ('serviceWorker' in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
       await Promise.all(regs.map(r => r.unregister()));
     }
-    // Hard reload
-    location.reload(true);
+    location.reload();
   }
 
-  $('#btn-update').addEventListener('click', async () => {
-    // Long-press style: if shift/alt held, force full app refresh
-    // Otherwise normal lesson sync, then offer reload if SW updated
-    const btn = $('#btn-update');
-    btn.disabled = true;
-    try {
-      await syncFromGitHub(true);
-      // After syncing lessons, also check for new app version
-      if ('serviceWorker' in navigator) {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (reg) {
-          await reg.update();
-          if (reg.waiting) {
-            reg.waiting.postMessage('SKIP_WAITING');
-            toast('Nova versão do app encontrada. Recarregando...');
-            setTimeout(() => location.reload(), 800);
-            return;
-          }
-        }
-      }
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
-  // Double-click or long hold alternative: force clear everything
-  let updateTapCount = 0;
-  $('#btn-update').addEventListener('dblclick', (e) => {
-    e.preventDefault();
-    toast('Limpando cache e recarregando app...');
-    forceAppRefresh();
-  });
+  // Events
+  $('#btn-nav-back').addEventListener('click', goHome);
   $('#btn-back').addEventListener('click', closeViewer);
   $('#btn-done').addEventListener('click', () => {
     if (!currentLesson) return;
@@ -931,16 +851,69 @@
     updateDoneBtn();
     toast(progress[currentLesson] ? 'Marcada como concluída' : 'Desmarcada');
   });
-  $('#btn-theme').addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
+  $('#btn-prev').addEventListener('click', () => goPrevNext(-1));
+  $('#btn-next').addEventListener('click', () => goPrevNext(1));
+  $('#btn-note').addEventListener('click', () => {
+    $('#note-box').classList.toggle('open');
   });
-  $('#search').addEventListener('input', (e) => {
+  $('#btn-note-save').addEventListener('click', () => {
+    if (!currentLesson) return;
+    const val = $('#note-text').value.trim();
+    if (val) notes[currentLesson] = val;
+    else delete notes[currentLesson];
+    saveNotes();
+    toast('Nota salva');
+    $('#note-box').classList.remove('open');
+  });
+  $('#btn-note-clear').addEventListener('click', () => {
+    $('#note-text').value = '';
+  });
+  $('#btn-theme').addEventListener('click', () => {
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+  $('#search').addEventListener('input', e => {
     searchQuery = e.target.value.trim();
     render();
   });
-  $('#last-viewed').addEventListener('click', () => {
-    if (lastViewed?.path) openLesson(lastViewed.path);
+  $('#btn-filter-pending').addEventListener('click', () => {
+    onlyPending = !onlyPending;
+    render();
+  });
+
+  // Menu
+  $('#btn-menu').addEventListener('click', (e) => {
+    e.stopPropagation();
+    $('#menu-panel').classList.toggle('open');
+  });
+  document.addEventListener('click', () => $('#menu-panel').classList.remove('open'));
+  $('#menu-export').addEventListener('click', exportProgress);
+  $('#menu-import').addEventListener('click', () => $('#import-file').click());
+  $('#menu-update').addEventListener('click', async () => {
+    toast('Atualizando...');
+    await syncFromGitHub(true);
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg) {
+        await reg.update();
+        if (reg.waiting) {
+          reg.waiting.postMessage('SKIP_WAITING');
+          setTimeout(() => location.reload(), 600);
+        }
+      }
+    }
+  });
+  $('#import-file').addEventListener('change', (e) => {
+    const f = e.target.files?.[0];
+    if (f) importProgress(f);
+    e.target.value = '';
+  });
+
+  // Keyboard in viewer
+  document.addEventListener('keydown', (e) => {
+    if (!$('#viewer').classList.contains('open')) return;
+    if (e.key === 'Escape') closeViewer();
+    if (e.key === 'ArrowLeft') goPrevNext(-1);
+    if (e.key === 'ArrowRight') goPrevNext(1);
   });
 
   async function init() {
@@ -949,14 +922,12 @@
     }
     const hasCache = await loadFromCache();
     if (hasCache) updateStatus(navigator.onLine);
-    if (navigator.onLine) {
-      await syncFromGitHub(false);
-    } else {
+    if (navigator.onLine) await syncFromGitHub(false);
+    else {
       updateStatus(false);
       if (!hasCache) $('#content').innerHTML = `<div class="empty"><p>Sem conexão e nenhum cache.</p></div>`;
     }
   }
-
   window.addEventListener('online', () => updateStatus(true));
   window.addEventListener('offline', () => updateStatus(false));
   init();
