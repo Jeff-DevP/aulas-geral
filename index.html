@@ -609,16 +609,18 @@
         lastUpdate: data.lastUpdate
       });
       render();
-      toast(force ? 'Atualizado!' : 'Aulas carregadas');
+      if (!force) toast('Aulas carregadas');
       updateStatus(true);
+      return { ok: true, count: totalFiles };
     } catch (err) {
       console.error(err);
       const hasCache = await loadFromCache();
-      if (hasCache) { toast('Sem conexão. Usando cache.', 3200); updateStatus(false); }
+      if (hasCache) { if (!force) toast('Sem conexão. Usando cache.', 3200); updateStatus(false); }
       else {
         $('#content').innerHTML = `<div class="error-box"><p><strong>Erro</strong></p><p style="margin-top:8px">${escapeHtml(err.message)}</p></div>`;
         updateStatus(false);
       }
+      return { ok: false, error: err };
     } finally {
       if (loadProgress) loadProgress.textContent = '';
     }
@@ -1076,13 +1078,47 @@
     reader.readAsText(file);
   }
 
-  async function forceAppRefresh() {
-    // Deliberately do not unregister service workers or erase origin-wide caches.
-    if ('serviceWorker' in navigator) {
-      const reg = await navigator.serviceWorker.getRegistration('./');
-      if (reg) await reg.update();
+  // Atualiza o shell sem apagar caches de outros apps nem recarregar antes da hora.
+  async function updateAppShell() {
+    if (!('serviceWorker' in navigator)) return { updated: false, supported: false };
+    const registration = await navigator.serviceWorker.getRegistration('./');
+    if (!registration) return { updated: false, supported: true };
+
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    let controllerChanged = false;
+    const onControllerChange = () => { controllerChanged = true; };
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+    try {
+      await registration.update();
+      let worker = registration.waiting;
+      if (!worker && registration.installing) {
+        worker = registration.installing;
+        await new Promise(resolve => {
+          if (worker.state === 'installed' || worker.state === 'activated' || worker.state === 'redundant') return resolve();
+          const onState = () => {
+            if (worker.state === 'installed' || worker.state === 'activated' || worker.state === 'redundant') {
+              worker.removeEventListener('statechange', onState);
+              resolve();
+            }
+          };
+          worker.addEventListener('statechange', onState);
+          setTimeout(() => { worker.removeEventListener('statechange', onState); resolve(); }, 10000);
+        });
+        worker = registration.waiting;
+      }
+      if (!worker || worker.state === 'redundant') return { updated: false, supported: true };
+      worker.postMessage('SKIP_WAITING');
+      if (!hadController) return { updated: true, controlled: false };
+      await new Promise(resolve => {
+        if (controllerChanged) return resolve();
+        const timeout = setTimeout(resolve, 10000);
+        const finish = () => { clearTimeout(timeout); resolve(); };
+        navigator.serviceWorker.addEventListener('controllerchange', finish, { once: true });
+      });
+      return { updated: controllerChanged, timedOut: !controllerChanged };
+    } finally {
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
     }
-    location.reload();
   }
 
   // Events
@@ -1131,18 +1167,47 @@
   document.addEventListener('click', () => $('#menu-panel').classList.remove('open'));
   $('#menu-export').addEventListener('click', exportProgress);
   $('#menu-import').addEventListener('click', () => $('#import-file').click());
+  let updateInProgress = false;
   $('#menu-update').addEventListener('click', async () => {
-    toast('Atualizando...');
-    await syncFromGitHub(true);
-    if ('serviceWorker' in navigator) {
-      const reg = await navigator.serviceWorker.getRegistration();
-      if (reg) {
-        await reg.update();
-        if (reg.waiting) {
-          reg.waiting.postMessage('SKIP_WAITING');
-          setTimeout(() => location.reload(), 600);
-        }
+    const button = $('#menu-update');
+    if (updateInProgress) return;
+    updateInProgress = true;
+    const originalLabel = button.textContent;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    button.textContent = 'Atualizando aulas…';
+    $('#menu-panel').classList.remove('open');
+    try {
+      toast('Verificando atualizações…');
+      const result = await syncFromGitHub(true);
+      if (!result || !result.ok) {
+        toast(navigator.onLine ? 'Não foi possível atualizar. Mantive os dados disponíveis.' : 'Você está offline. Mantive o conteúdo em cache.', 4200);
+        return;
       }
+      button.textContent = 'Atualizando aplicativo…';
+      let appResult = { updated: false, supported: 'serviceWorker' in navigator };
+      try { appResult = await updateAppShell(); }
+      catch (error) { console.warn('Falha ao atualizar o shell PWA:', error); }
+      if (appResult.updated && appResult.controlled !== false) {
+        toast('Aulas e aplicativo atualizados. Recarregando…');
+        location.reload();
+        return;
+      }
+      if (appResult.updated && appResult.controlled === false) {
+        toast('Aulas atualizadas. O aplicativo terminará de instalar a nova versão em segundo plano.', 4500);
+      } else if (appResult.timedOut) {
+        toast('Aulas atualizadas. A nova versão do aplicativo ainda está ativando; recarregue em instantes.', 5000);
+      } else {
+        toast('Aulas atualizadas! O aplicativo já está na versão mais recente.');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar:', error);
+      toast('Ocorreu um erro durante a atualização. Tente novamente.', 4200);
+    } finally {
+      updateInProgress = false;
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      button.textContent = originalLabel;
     }
   });
   $('#import-file').addEventListener('change', (e) => {
