@@ -4,10 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0c1017" />
+  <meta name="description" content="Organize seus cursos, acompanhe seu progresso e mantenha suas anotações de estudo." />
+  <meta name="color-scheme" content="dark light" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Aulas Gerais</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%233b82f6'/%3E%3Ctext x='50' y='66' font-size='48' text-anchor='middle' fill='white' font-family='system-ui' font-weight='700'%3EA%3C/text%3E%3C/svg%3E" />
   <style>
     :root, [data-theme="dark"] {
@@ -199,6 +202,37 @@
       border-radius: var(--radius-sm); cursor: pointer;
     }
     .menu-panel button:hover { background: var(--surface-2); }
+
+    .dashboard-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin: 0 0 16px; }
+    .mini-card { background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:13px; min-width:0; }
+    .mini-card .mini-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+    .mini-card .mini-value { font-size:1.45rem; font-weight:750; margin-top:3px; letter-spacing:-.03em; }
+    .mini-card .mini-sub { color:var(--muted); font-size:.75rem; margin-top:2px; }
+    .goal-row { display:flex; gap:10px; align-items:center; margin-top:12px; }
+    .goal-row input { width:76px; min-width:0; padding:8px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--fg); font:inherit; }
+    .goal-track { height:7px; border-radius:99px; background:var(--surface-3); overflow:hidden; margin-top:9px; }
+    .goal-track > div { height:100%; background:linear-gradient(90deg,var(--accent),#34d399); border-radius:99px; }
+    .quick-actions { display:flex; gap:8px; flex-wrap:wrap; margin: 0 0 18px; }
+    .notes-panel { display:none; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:14px; margin-bottom:16px; }
+    .notes-panel.open { display:block; }
+    .notes-list { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+    .note-entry { text-align:left; width:100%; border:1px solid var(--line); border-radius:9px; background:var(--surface-2); color:var(--fg); padding:11px; cursor:pointer; }
+    .note-entry strong { display:block; margin-bottom:4px; }
+    .note-entry span { color:var(--muted); font-size:.82rem; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .state-select { max-width:112px; font:inherit; font-size:.72rem; padding:5px 4px; border-radius:7px; border:1px solid var(--line); color:var(--fg); background:var(--surface-2); }
+    .lesson.inprogress { border-color:var(--accent); }
+    .lesson.review { border-color:var(--warning); background:color-mix(in srgb,var(--warning) 7%,var(--surface)); }
+    .focus-panel { position:fixed; right:16px; bottom:16px; z-index:90; width:min(300px,calc(100vw - 32px)); background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px; box-shadow:var(--shadow); }
+    .focus-panel[hidden] { display:none; }
+    .focus-time { font-size:2rem; text-align:center; font-weight:800; letter-spacing:.04em; font-variant-numeric:tabular-nums; padding:8px; }
+    .focus-actions { display:flex; gap:8px; }
+    .focus-actions .btn { flex:1; justify-content:center; }
+    .section-heading { display:flex; justify-content:space-between; align-items:center; gap:8px; margin:18px 0 9px; }
+    .section-heading h3 { font-size:.9rem; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    @media (max-width:420px) { .dashboard-grid { grid-template-columns:1fr 1fr; gap:8px; } .mini-card { padding:11px; } .mini-card .mini-value { font-size:1.25rem; } .state-select { max-width:92px; } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+
   </style>
 </head>
 <body>
@@ -274,7 +308,13 @@
 
   <input type="file" id="import-file" accept="application/json,.json" hidden />
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <section class="focus-panel" id="focus-panel" hidden aria-label="Temporizador de foco">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><strong>⏱ Foco</strong><button class="btn icon-only" id="focus-close" aria-label="Fechar temporizador">×</button></div>
+    <div class="focus-time" id="focus-time">25:00</div>
+    <div class="focus-actions"><button class="btn primary" id="focus-toggle">Começar</button><button class="btn" id="focus-reset">Reiniciar</button></div>
+    <p class="mini-sub" style="text-align:center;margin-top:8px">Uma sessão curta já conta. Bora estudar!</p>
+  </section>
 
   <script>
   const REPO = 'Jeff-DevP/aulas-geral';
@@ -282,14 +322,31 @@
   const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/main`;
 
   let data = { categories: {}, lastUpdate: null };
-  let progress = JSON.parse(localStorage.getItem('progress') || '{}');
-  let notes = JSON.parse(localStorage.getItem('notes') || '{}');
-  let lastViewed = JSON.parse(localStorage.getItem('lastViewed') || 'null');
+  function readJSON(key, fallback, validate = () => true) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw === null) return fallback;
+      const value = JSON.parse(raw);
+      return validate(value) ? value : fallback;
+    } catch (error) {
+      console.warn(`Dados locais inválidos (${key}); usando padrão seguro.`, error);
+      return fallback;
+    }
+  }
+  let progress = readJSON('progress', {}, v => v && typeof v === 'object' && !Array.isArray(v));
+  let notes = readJSON('notes', {}, v => v && typeof v === 'object' && !Array.isArray(v));
+  let lastViewed = readJSON('lastViewed', null, v => v === null || (v && typeof v === 'object'));
+  let lessonStates = readJSON('lessonStates', {}, v => v && typeof v === 'object' && !Array.isArray(v));
+  let studyLog = readJSON('studyLog', {}, v => v && typeof v === 'object' && !Array.isArray(v));
+  let weeklyGoal = Math.min(100, Math.max(1, Number(readJSON('weeklyGoal', 3, v => Number.isFinite(Number(v))))));
   let currentLesson = null;
   let currentCourse = null;
   let searchQuery = '';
   let onlyPending = false;
   let lessonListForNav = []; // ordered list for prev/next
+  let lessonLoadToken = 0;
+  let activeObjectUrl = null;
+  let focusTimer = { remaining: 25 * 60, running: false, interval: null };
 
   const $ = s => document.querySelector(s);
   const $$ = s => Array.from(document.querySelectorAll(s));
@@ -301,13 +358,52 @@
     clearTimeout(t._tid);
     t._tid = setTimeout(() => t.classList.remove('show'), time);
   }
-  function saveProgress() { localStorage.setItem('progress', JSON.stringify(progress)); }
-  function saveNotes() { localStorage.setItem('notes', JSON.stringify(notes)); }
+  function safeStore(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+    catch (error) { console.error(`Não foi possível salvar ${key}`, error); toast('Armazenamento indisponível ou cheio'); return false; }
+  }
+  function saveProgress() { return safeStore('progress', progress); }
+  function saveNotes() { return safeStore('notes', notes); }
+  function saveLessonStates() { return safeStore('lessonStates', lessonStates); }
+  function saveStudyLog() { return safeStore('studyLog', studyLog); }
+  function localDayKey(date = new Date()) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
+  function logStudy(path) {
+    const day = localDayKey();
+    if (!studyLog[day]) studyLog[day] = [];
+    if (!studyLog[day].includes(path)) studyLog[day].push(path);
+    saveStudyLog();
+  }
+  function getStudyStats() {
+    const days = Object.keys(studyLog).filter(day => Array.isArray(studyLog[day]) && studyLog[day].length).sort();
+    const today = localDayKey();
+    let streak = 0;
+    const cursor = new Date();
+    if (!studyLog[today]?.length) cursor.setDate(cursor.getDate() - 1);
+    while (true) {
+      const key = localDayKey(cursor);
+      if (!studyLog[key]?.length) break;
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    const now = new Date();
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekday = (monday.getDay() + 6) % 7;
+    monday.setDate(monday.getDate() - weekday);
+    const weekStart = localDayKey(monday);
+    const thisWeek = days.filter(day => day >= weekStart).reduce((sum, day) => sum + studyLog[day].length, 0);
+    return { streak, thisWeek, days: days.length };
+  }
+  function getLessonState(path) { return progress[path] ? 'done' : (['inprogress','review'].includes(lessonStates[path]) ? lessonStates[path] : 'pending'); }
+  function setLessonState(path, state) {
+    if (state === 'done') { progress[path] = true; delete lessonStates[path]; logStudy(path); }
+    else { delete progress[path]; if (state === 'pending') delete lessonStates[path]; else lessonStates[path] = state; }
+    saveProgress(); saveLessonStates(); render(); updateDoneBtn();
+  }
   function saveLastViewed(path) {
     const meta = findLesson(path);
     if (!meta) return;
     lastViewed = { path, title: meta.title, category: meta.category };
-    localStorage.setItem('lastViewed', JSON.stringify(lastViewed));
+    safeStore('lastViewed', lastViewed);
   }
   function escapeHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -317,10 +413,10 @@
   }
 
   function parseLesson(html, filename) {
-    let num = 9999, isExtra = false;
-    const mNum = html.match(/Aula\s+(\d+)/i) || html.match(/aula\s*0*(\d+)/i);
+    let num = 9999, isExtra = /extra/i.test(filename);
+    const mNum = filename.match(/aula[-_\s]*0*(\d+)/i) || html.match(/Aula\s*0*(\d+)/i);
     if (mNum) num = parseInt(mNum[1], 10);
-    else if (/extra/i.test(html.slice(0, 2000)) || /extra/i.test(filename)) { isExtra = true; num = 9000; }
+    else if (isExtra || /\bextra\b/i.test(html.replace(/<[^>]*>/g, ' ').slice(0, 10000))) { isExtra = true; num = 9000; }
     let title = filename.replace(/\.html$/i, '').replace(/[-_]/g, ' ');
     const mTitle = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     if (mTitle) title = mTitle[1].trim();
@@ -332,13 +428,15 @@
 
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    try { localStorage.setItem('theme', theme); } catch (error) { console.warn('Preferência de tema não pôde ser salva.', error); }
     const isDark = theme === 'dark';
     $('#icon-moon').style.display = isDark ? 'none' : 'block';
     $('#icon-sun').style.display = isDark ? 'block' : 'none';
     document.querySelector('meta[name="theme-color"]').content = isDark ? '#0c1017' : '#f0f3f8';
   }
-  applyTheme(localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+  let savedTheme = 'dark';
+  try { savedTheme = localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'); } catch (error) {}
+  applyTheme(savedTheme);
 
   const DB_NAME = 'aulas-geral', STORE = 'lessons';
   function openDB() {
@@ -374,6 +472,20 @@
       const req = tx.objectStore(STORE).getAll();
       req.onsuccess = () => res(req.result || []);
       req.onerror = () => res([]);
+    });
+  }
+  async function idbPrune(validPaths) {
+    const db = await openDB();
+    const keep = new Set(validPaths);
+    const existing = await idbGetAll();
+    const stale = existing.filter(item => !keep.has(item.path)).map(item => item.path);
+    if (!stale.length) return 0;
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      const store = tx.objectStore(STORE);
+      stale.forEach(path => store.delete(path));
+      tx.oncomplete = () => resolve(stale.length);
+      tx.onerror = () => reject(tx.error);
     });
   }
 
@@ -436,8 +548,11 @@
         lessons.sort((a, b) => a.num - b.num || a.title.localeCompare(b.title, 'pt-BR'));
         newData.categories[folder.name] = lessons;
       }
+      // Prune stale lesson HTML only after the full GitHub scan succeeded.
+      try { await idbPrune(Object.values(newData.categories).flat().map(lesson => lesson.path)); }
+      catch (pruneError) { console.warn('Não foi possível limpar aulas removidas do cache.', pruneError); }
       data = newData;
-      localStorage.setItem('data-meta', JSON.stringify({
+      safeStore('data-meta', {
         categories: Object.fromEntries(
           Object.entries(data.categories).map(([k, v]) => [k, v.map(l => ({
             path: l.path, name: l.name, sha: l.sha, num: l.num, title: l.title,
@@ -445,7 +560,7 @@
           }))])
         ),
         lastUpdate: data.lastUpdate
-      }));
+      });
       render();
       toast(force ? 'Atualizado!' : 'Aulas carregadas');
       updateStatus(true);
@@ -497,7 +612,7 @@
     for (const cat of cats) {
       for (const l of (data.categories[cat] || [])) {
         total++;
-        if (progress[l.path]) done++;
+        if (getLessonState(l.path) === 'done') done++;
         if (l.isExtra || l.num >= 9000) extras++;
       }
     }
@@ -523,7 +638,7 @@
 
   function filterLesson(l) {
     if (!matchesSearch(l)) return false;
-    if (onlyPending && progress[l.path]) return false;
+    if (onlyPending && getLessonState(l.path) === 'done') return false;
     return true;
   }
 
@@ -564,6 +679,29 @@
         </div>
       </div>
     `;
+
+    if (!searchQuery) {
+      const study = getStudyStats();
+      const notesCount = Object.values(notes).filter(v => typeof v === 'string' && v.trim()).length;
+      const goalPct = Math.min(100, Math.round(study.thisWeek / weeklyGoal * 100));
+      html += `
+        <div class="dashboard-grid">
+          <div class="mini-card"><div class="mini-label">🔥 Sequência</div><div class="mini-value">${study.streak} dia${study.streak === 1 ? '' : 's'}</div><div class="mini-sub">Dias seguidos estudando</div></div>
+          <div class="mini-card"><div class="mini-label">📅 Esta semana</div><div class="mini-value">${study.thisWeek}</div><div class="mini-sub">Aulas concluídas</div></div>
+        </div>
+        <div class="stats-card">
+          <h3>Meta semanal</h3>
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><strong>${study.thisWeek} de ${weeklyGoal} aulas</strong><span class="stats-pct">${goalPct}%</span></div>
+          <div class="goal-track"><div style="width:${goalPct}%"></div></div>
+          <div class="goal-row"><label for="weekly-goal" style="font-size:.82rem;color:var(--muted);flex:1">Aulas por semana</label><input id="weekly-goal" type="number" min="1" max="100" value="${weeklyGoal}" aria-label="Meta de aulas por semana"><button class="btn" id="save-goal">Salvar</button></div>
+        </div>
+        <div class="quick-actions">
+          <button class="btn" id="btn-show-notes">📝 Minhas notas (${notesCount})</button>
+          <button class="btn" id="btn-focus">⏱ Iniciar foco</button>
+        </div>
+        <div class="notes-panel" id="notes-panel"><div class="section-heading" style="margin-top:0"><h3>Central de anotações</h3><button class="btn" id="btn-notes-export">Exportar notas</button></div><input id="notes-search" type="search" placeholder="Buscar nas anotações..." aria-label="Buscar nas anotações" style="width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--fg)"><div class="notes-list" id="notes-list"></div></div>
+      `;
+    }
 
     if (lastViewed && findLesson(lastViewed.path) && !searchQuery) {
       html += `
@@ -612,9 +750,22 @@
     $$('.course-card[data-course]').forEach(el => el.addEventListener('click', () => openCourse(el.dataset.course)));
     const cont = $('#btn-continue');
     if (cont) cont.addEventListener('click', () => openLesson(lastViewed.path));
-    $$('.lesson').forEach(el => el.addEventListener('click', () => openLesson(el.dataset.path)));
+    $$('.lesson-open').forEach(el => el.addEventListener('click', () => openLesson(el.dataset.path)));
+    $$('.state-select').forEach(el => el.addEventListener('change', () => setLessonState(el.dataset.statePath, el.value)));
     const ex = $('#btn-export-home'); if (ex) ex.addEventListener('click', exportProgress);
     const im = $('#btn-import-home'); if (im) im.addEventListener('click', () => $('#import-file').click());
+    const saveGoal = $('#save-goal'); if (saveGoal) saveGoal.addEventListener('click', () => {
+      const value = Number($('#weekly-goal').value);
+      if (!Number.isInteger(value) || value < 1 || value > 100) { toast('Escolha uma meta entre 1 e 100'); return; }
+      weeklyGoal = value; safeStore('weeklyGoal', weeklyGoal); render(); toast('Meta semanal salva');
+    });
+    const showNotes = $('#btn-show-notes'); if (showNotes) showNotes.addEventListener('click', () => {
+      const panel = $('#notes-panel'); panel.classList.toggle('open');
+      if (panel.classList.contains('open')) renderNotesList();
+    });
+    const notesSearch = $('#notes-search'); if (notesSearch) notesSearch.addEventListener('input', renderNotesList);
+    const notesExport = $('#btn-notes-export'); if (notesExport) notesExport.addEventListener('click', exportNotesMarkdown);
+    const focusBtn = $('#btn-focus'); if (focusBtn) focusBtn.addEventListener('click', () => { $('#focus-panel').hidden = false; });
   }
 
   function renderCourse(courseName) {
@@ -649,21 +800,60 @@
     }
 
     $('#content').innerHTML = html;
-    $$('.lesson').forEach(el => el.addEventListener('click', () => openLesson(el.dataset.path)));
+    $$('.lesson-open').forEach(el => el.addEventListener('click', () => openLesson(el.dataset.path)));
+    $$('.state-select').forEach(el => el.addEventListener('change', () => setLessonState(el.dataset.statePath, el.value)));
   }
 
   function lessonCard(l) {
     const numLabel = l.isExtra || l.num >= 9000 ? 'Extra' : l.num;
     const numClass = (l.isExtra || l.num >= 9000) ? 'num extra' : 'num';
     const hasNote = !!(notes[l.path] && notes[l.path].trim());
-    return `<button class="lesson ${progress[l.path] ? 'done' : ''}" data-path="${escapeHtml(l.path)}">
-      <span class="${numClass}">${numLabel}</span>
-      <div class="info">
-        <div class="title">${escapeHtml(l.title)}</div>
-        <div class="file">${hasNote ? '<span class="note-dot" title="Tem nota"></span>' : ''}${escapeHtml(l.name)}</div>
-      </div>
-      <div class="check">✓</div>
-    </button>`;
+    const state = getLessonState(l.path);
+    const stateLabel = state === 'done' ? 'Concluída' : state === 'inprogress' ? 'Em andamento' : state === 'review' ? 'Revisar' : 'Pendente';
+    return `<div class="lesson ${state === 'done' ? 'done' : state}" data-lesson-row="${escapeHtml(l.path)}">
+      <button type="button" class="lesson-open" data-path="${escapeHtml(l.path)}" style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;border:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;padding:0">
+        <span class="${numClass}">${numLabel}</span>
+        <div class="info"><div class="title">${escapeHtml(l.title)}</div><div class="file">${hasNote ? '<span class="note-dot" title="Tem nota"></span>' : ''}${escapeHtml(l.name)}</div></div>
+      </button>
+      <select class="state-select" data-state-path="${escapeHtml(l.path)}" aria-label="Estado: ${escapeHtml(l.title)}"><option value="pending" ${state==='pending'?'selected':''}>Pendente</option><option value="inprogress" ${state==='inprogress'?'selected':''}>Em andamento</option><option value="review" ${state==='review'?'selected':''}>Revisar</option><option value="done" ${state==='done'?'selected':''}>Concluída</option></select>
+    </div>`;
+  }
+
+  function renderNotesList() {
+    const list = $('#notes-list'); if (!list) return;
+    const q = ($('#notes-search')?.value || '').trim().toLowerCase();
+    const entries = Object.entries(notes).filter(([path, note]) => typeof note === 'string' && note.trim() && (!q || note.toLowerCase().includes(q) || path.toLowerCase().includes(q)));
+    if (!entries.length) { list.innerHTML = '<p class="mini-sub">Nenhuma anotação encontrada. Salve uma nota dentro de uma aula para vê-la aqui.</p>'; return; }
+    list.innerHTML = entries.map(([path, note]) => {
+      const meta = findLesson(path);
+      return `<button class="note-entry" data-note-path="${escapeHtml(path)}"><strong>${escapeHtml(meta?.title || path.split('/').pop())}</strong><span>${escapeHtml(note.length > 240 ? note.slice(0,240)+'…' : note)}</span><small style="display:block;color:var(--muted);margin-top:6px">${escapeHtml(meta?.category || path.split('/')[0] || '')}</small></button>`;
+    }).join('');
+    $$('.note-entry').forEach(el => el.addEventListener('click', () => openLesson(el.dataset.notePath)));
+  }
+  function exportNotesMarkdown() {
+    const entries = Object.entries(notes).filter(([,note]) => typeof note === 'string' && note.trim());
+    const body = ['# Minhas anotações — Aulas Gerais', '', ...entries.flatMap(([path,note]) => { const meta=findLesson(path); return [`## ${meta?.title || path}`, `Curso: ${meta?.category || path.split('/')[0] || '—'}`, '', note, '']; })].join('\n');
+    downloadText(body, `aulas-geral-notas-${localDayKey()}.md`, 'text/markdown;charset=utf-8');
+  }
+  function downloadText(text, filename, type) {
+    const blob = new Blob([text], {type}); const url = URL.createObjectURL(blob); const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+  function updateFocusDisplay() {
+    const mins = Math.floor(focusTimer.remaining / 60); const secs = focusTimer.remaining % 60;
+    $('#focus-time').textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    $('#focus-toggle').textContent = focusTimer.running ? 'Pausar' : 'Começar';
+  }
+  function toggleFocusTimer() {
+    if (focusTimer.running) { clearInterval(focusTimer.interval); focusTimer.interval = null; focusTimer.running = false; updateFocusDisplay(); return; }
+    if (focusTimer.remaining <= 0) focusTimer.remaining = 25 * 60;
+    focusTimer.running = true;
+    focusTimer.interval = setInterval(() => {
+      focusTimer.remaining--;
+      updateFocusDisplay();
+      if (focusTimer.remaining <= 0) { clearInterval(focusTimer.interval); focusTimer.interval = null; focusTimer.running = false; toast('Sessão de foco concluída! Pausa merecida ☕', 5000); if ('vibrate' in navigator) navigator.vibrate([150,80,150]); updateFocusDisplay(); }
+    }, 1000);
+    updateFocusDisplay();
   }
 
   function openCourse(name) {
@@ -698,39 +888,51 @@
   }
 
   async function openLesson(path) {
+    const token = ++lessonLoadToken;
     currentLesson = path;
     const meta = findLesson(path);
     $('#viewer-title').textContent = meta ? meta.title : path.split('/').pop();
     saveLastViewed(path);
     buildNavList(path);
     updateNavButtons();
-
-    // notes
     $('#note-text').value = notes[path] || '';
     $('#note-box').classList.remove('open');
-
-    let content = null;
-    const cached = await idbGet(path);
-    if (cached?.content) content = cached.content;
-    else {
-      try {
-        content = await fetchRaw(path, meta?.download_url);
-        const parsed = parseLesson(content, path.split('/').pop());
-        await idbPut({ path, sha: meta?.sha || '', name: path.split('/').pop(), ...parsed, content, category: meta?.category || '' });
-      } catch (e) {
-        toast('Não foi possível carregar a aula');
-        return;
-      }
-    }
-
-    const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const frame = $('#frame');
-    frame.src = url;
-    frame.onload = () => setTimeout(() => URL.revokeObjectURL(url), 1500);
     $('#viewer').classList.add('open');
     document.body.style.overflow = 'hidden';
-    updateDoneBtn();
+    $('#frame').src = 'about:blank';
+    $('#viewer-title').setAttribute('aria-busy','true');
+    try {
+      let content = null;
+      const cached = await idbGet(path);
+      if (token !== lessonLoadToken) return;
+      if (cached?.content) content = cached.content;
+      else {
+        content = await fetchRaw(path, meta?.download_url);
+        if (token !== lessonLoadToken) return;
+        const parsed = parseLesson(content, path.split('/').pop());
+        await idbPut({ path, sha: meta?.sha || '', name: path.split('/').pop(), ...parsed, content, category: meta?.category || '' });
+      }
+      if (token !== lessonLoadToken) return;
+      // Keep relative lesson assets pointed at the original repository folder.
+      const parentUrl = `https://raw.githubusercontent.com/${REPO}/main/${path.split('/').slice(0,-1).map(encodeURIComponent).join('/')}/`;
+      const safeContent = /<head[^>]*>/i.test(content)
+        ? content.replace(/<head([^>]*)>/i, `<head$1><base href="${parentUrl}">`)
+        : /<html[^>]*>/i.test(content)
+          ? content.replace(/<html([^>]*)>/i, `<html$1><head><base href="${parentUrl}"></head>`)
+          : `<!doctype html><html><head><meta charset="utf-8"><base href="${parentUrl}"></head><body>${content}</body></html>`;
+      const blob = new Blob([safeContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl);
+      activeObjectUrl = url;
+      const frame = $('#frame');
+      frame.setAttribute('sandbox', 'allow-scripts allow-forms');
+      frame.src = url;
+      updateDoneBtn();
+    } catch (e) {
+      if (token === lessonLoadToken) toast('Não foi possível carregar a aula. Verifique a conexão e tente novamente.');
+    } finally {
+      if (token === lessonLoadToken) $('#viewer-title').removeAttribute('aria-busy');
+    }
   }
 
   function findLesson(path) {
@@ -743,18 +945,18 @@
 
   function updateDoneBtn() {
     const btn = $('#btn-done');
-    if (progress[currentLesson]) {
-      btn.textContent = 'Concluída ✓';
-      btn.classList.add('primary');
+    if (getLessonState(currentLesson) === 'done') {
+      btn.textContent = 'Concluída ✓'; btn.classList.add('primary');
     } else {
-      btn.textContent = 'Concluir';
-      btn.classList.remove('primary');
+      btn.textContent = 'Concluir'; btn.classList.remove('primary');
     }
   }
 
   function closeViewer() {
+    lessonLoadToken++;
     $('#viewer').classList.remove('open');
     $('#frame').src = 'about:blank';
+    if (activeObjectUrl) { URL.revokeObjectURL(activeObjectUrl); activeObjectUrl = null; }
     document.body.style.overflow = '';
     currentLesson = null;
     render();
@@ -784,59 +986,54 @@
   // Backup
   function exportProgress() {
     const payload = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       progress,
       notes,
-      lastViewed
+      lastViewed,
+      lessonStates,
+      studyLog,
+      weeklyGoal
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `aulas-geral-backup-${new Date().toISOString().slice(0,10)}.json`;
     a.click();
-    URL.revokeObjectURL(a.href);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
     toast('Backup exportado');
   }
 
   function importProgress(file) {
+    if (!file || file.size > 5 * 1024 * 1024) { toast('Arquivo inválido ou maior que 5 MB'); return; }
     const reader = new FileReader();
     reader.onload = () => {
       try {
         const payload = JSON.parse(reader.result);
-        if (payload.progress && typeof payload.progress === 'object') {
-          progress = { ...progress, ...payload.progress };
-          saveProgress();
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Formato inválido');
+        if (payload.version && payload.version > 2) throw new Error('Versão de backup não compatível');
+        const validMap = obj => obj && typeof obj === 'object' && !Array.isArray(obj);
+        if (validMap(payload.progress)) progress = { ...progress, ...Object.fromEntries(Object.entries(payload.progress).filter(([k,v]) => typeof k === 'string' && typeof v === 'boolean')) };
+        if (validMap(payload.notes)) notes = { ...notes, ...Object.fromEntries(Object.entries(payload.notes).filter(([k,v]) => typeof k === 'string' && typeof v === 'string')) };
+        if (validMap(payload.lessonStates)) lessonStates = { ...lessonStates, ...Object.fromEntries(Object.entries(payload.lessonStates).filter(([k,v]) => typeof k === 'string' && ['inprogress','review'].includes(v))) };
+        if (validMap(payload.studyLog)) {
+          for (const [day, paths] of Object.entries(payload.studyLog)) if (/^\d{4}-\d{2}-\d{2}$/.test(day) && Array.isArray(paths)) studyLog[day] = [...new Set(paths.filter(p => typeof p === 'string'))];
         }
-        if (payload.notes && typeof payload.notes === 'object') {
-          notes = { ...notes, ...payload.notes };
-          saveNotes();
-        }
-        if (payload.lastViewed) {
-          lastViewed = payload.lastViewed;
-          localStorage.setItem('lastViewed', JSON.stringify(lastViewed));
-        }
-        render();
-        toast('Progresso importado');
-      } catch (e) {
-        toast('Arquivo inválido');
-      }
+        if (payload.lastViewed && typeof payload.lastViewed.path === 'string') lastViewed = { path: payload.lastViewed.path, title: String(payload.lastViewed.title || ''), category: String(payload.lastViewed.category || '') };
+        if (Number.isInteger(payload.weeklyGoal) && payload.weeklyGoal >= 1 && payload.weeklyGoal <= 100) weeklyGoal = payload.weeklyGoal;
+        saveProgress(); saveNotes(); saveLessonStates(); saveStudyLog(); safeStore('weeklyGoal', weeklyGoal); safeStore('lastViewed', lastViewed);
+        render(); toast('Backup importado e validado');
+      } catch (e) { toast(e.message === 'Versão de backup não compatível' ? e.message : 'Arquivo de backup inválido'); }
     };
+    reader.onerror = () => toast('Não foi possível ler o arquivo');
     reader.readAsText(file);
   }
 
   async function forceAppRefresh() {
-    if ('caches' in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => caches.delete(k)));
-    }
-    if (navigator.serviceWorker?.controller) {
-      navigator.serviceWorker.controller.postMessage('CLEAR_CACHE');
-      navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
-    }
+    // Deliberately do not unregister service workers or erase origin-wide caches.
     if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map(r => r.unregister()));
+      const reg = await navigator.serviceWorker.getRegistration('./');
+      if (reg) await reg.update();
     }
     location.reload();
   }
@@ -846,10 +1043,9 @@
   $('#btn-back').addEventListener('click', closeViewer);
   $('#btn-done').addEventListener('click', () => {
     if (!currentLesson) return;
-    progress[currentLesson] = !progress[currentLesson];
-    saveProgress();
-    updateDoneBtn();
-    toast(progress[currentLesson] ? 'Marcada como concluída' : 'Desmarcada');
+    const wasDone = getLessonState(currentLesson) === 'done';
+    setLessonState(currentLesson, wasDone ? 'pending' : 'done');
+    toast(wasDone ? 'Aula voltou para pendente' : 'Aula concluída! Mandou bem 🎉');
   });
   $('#btn-prev').addEventListener('click', () => goPrevNext(-1));
   $('#btn-next').addEventListener('click', () => goPrevNext(1));
@@ -911,10 +1107,17 @@
   // Keyboard in viewer
   document.addEventListener('keydown', (e) => {
     if (!$('#viewer').classList.contains('open')) return;
+    const target = e.target;
+    if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
     if (e.key === 'Escape') closeViewer();
-    if (e.key === 'ArrowLeft') goPrevNext(-1);
-    if (e.key === 'ArrowRight') goPrevNext(1);
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goPrevNext(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goPrevNext(1); }
   });
+
+  $('#focus-toggle').addEventListener('click', toggleFocusTimer);
+  $('#focus-reset').addEventListener('click', () => { clearInterval(focusTimer.interval); focusTimer.interval=null; focusTimer.running=false; focusTimer.remaining=25*60; updateFocusDisplay(); });
+  $('#focus-close').addEventListener('click', () => { $('#focus-panel').hidden=true; });
+  updateFocusDisplay();
 
   async function init() {
     if ('serviceWorker' in navigator) {
@@ -928,7 +1131,7 @@
       if (!hasCache) $('#content').innerHTML = `<div class="empty"><p>Sem conexão e nenhum cache.</p></div>`;
     }
   }
-  window.addEventListener('online', () => updateStatus(true));
+  window.addEventListener('online', () => { updateStatus(true); if (data.lastUpdate) $('#status-text').textContent = 'Conexão detectada · sincronize para atualizar'; });
   window.addEventListener('offline', () => updateStatus(false));
   init();
   </script>
