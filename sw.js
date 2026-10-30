@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aulas-geral-v4';
+const CACHE_NAME = 'aulas-geral-v5';
 const CACHE_PREFIX = 'aulas-geral-';
 const CORE = ['./', './index.html', './manifest.json', './sw.js'];
 
